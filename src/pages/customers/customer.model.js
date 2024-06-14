@@ -6,7 +6,7 @@ import { EditOutlined } from "@ant-design/icons";
 
 export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
   {
-    title: "รหัสลูกค้า",
+    title: "รหัสนักเรียน",
     key: "cuscode",
     dataIndex: "cuscode",
     width: "10%",
@@ -14,7 +14,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
     sorter: (a, b) => (a?.typecode || "").localeCompare(b?.typecode || ""),
   },
   {
-    title: "ชื่อลูกค้า",
+    title: "ชื่อนักเรียน",
     dataIndex: "cusname",
     key: "cusname",
     width: "30%",

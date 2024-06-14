@@ -98,7 +98,7 @@ const Login = () => {
 
         <Header>
           <div className="header-col header-brand">
-            <h5>VEERA DRYCUTTING</h5>
+            <h5>TOPSCI</h5>
           </div>
         </Header>
 
