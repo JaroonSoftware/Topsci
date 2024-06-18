@@ -107,7 +107,7 @@ const Login = () => {
           style={{ paddingTop: 200,backgroundImage: (logo4) }}
           
         >
-          <Card className="card-signup" style={{ backgroundColor: '#230935',}}>
+          <Card className="card-signup" style={{ backgroundColor: '#44008b',}}>
             <Space direction="vertical" className="width-100"  size={12}>
               <div className="flex justify-center ">
                 <img
@@ -140,7 +140,7 @@ const Login = () => {
                     />
                   </Form.Item>
                   <Form.Item>
-                    <Button style={{ width: "100%" }} htmlType="submit">
+                    <Button style={{ width: "100%",textShadowColor: 'rgba(0, 0, 0, 0.75)',}} htmlType="submit">
                       LOGIN
                     </Button>
                   </Form.Item>
