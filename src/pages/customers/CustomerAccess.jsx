@@ -51,7 +51,7 @@ const ItemsAccess = () => {
       state: {
         config: {
           ...mngConfig,
-          title: "เพิ่มลูกค้า",
+          title: "เพิ่มนักเรียน",
           action: "create",
         },
       },
@@ -65,7 +65,7 @@ const ItemsAccess = () => {
       state: {
         config: {
           ...mngConfig,
-          title: "แก้ไขข้อมูลลูกค้า",
+          title: "แก้ไขข้อมูลนักเรียน",
           action: "edit",
           code: data?.cuscode,
         },
@@ -133,20 +133,20 @@ const ItemsAccess = () => {
                 <Row gutter={[8, 8]}>
                 <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                     <Form.Item
-                      label="รหัสลูกค้า"
+                      label="รหัสนักเรียน"
                       name="cuscode"
                       onChange={handleSearch}
                     >
-                      <Input placeholder="กรอกรหัสลูกค้า" />
+                      <Input placeholder="กรอกรหัสนักเรียน" />
                     </Form.Item>
                   </Col>
                   <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                     <Form.Item
-                      label="ชื่อลูกค้า"
+                      label="ชื่อนักเรียน"
                       name="cusname"
                       onChange={handleSearch}
                     >
-                      <Input placeholder="กรอกชื่อลูกค้า" />
+                      <Input placeholder="กรอกชื่อนักเรียน" />
                     </Form.Item>
                   </Col>
                   <Col xs={24} sm={8} md={8} lg={8} xl={8}>
@@ -155,7 +155,7 @@ const ItemsAccess = () => {
                       name="tel"
                       onChange={handleSearch}
                     >
-                      <Input placeholder="กรอกเบอร์โทรลูกค้า" />
+                      <Input placeholder="กรอกเบอร์โทรนักเรียน" />
                     </Form.Item>
                   </Col>
                   
@@ -203,7 +203,7 @@ const ItemsAccess = () => {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start" align="center">
           <Typography.Title className="m-0 !text-zinc-800" level={3}>
-            รายชื่อลูกค้า
+            รายชื่อนักเรียน
           </Typography.Title>
         </Flex>
       </Col>
@@ -217,7 +217,7 @@ const ItemsAccess = () => {
               hangleAdd();
             }}
           >
-            เพิ่มลูกค้า
+            เพิ่มนักเรียน
           </Button>
         </Flex>
       </Col>
