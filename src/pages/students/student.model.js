@@ -6,53 +6,37 @@ import { EditOutlined } from "@ant-design/icons";
 
 export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
   {
-    title: "รหัสลูกค้า",
-    key: "cuscode",
-    dataIndex: "cuscode",
-    width: "10%",
-    align: "left",
-    sorter: (a, b) => (a?.typecode || "").localeCompare(b?.typecode || ""),
-  },
-  {
-    title: "ชื่อลูกค้า",
-    dataIndex: "cusname",
-    key: "cusname",
+    title: "ชื่อ-นามสกุล",
+    dataIndex: "name",
+    key: "name",
     width: "30%",
     sorter: (a, b) => (a?.typename || "").localeCompare(b?.typename || ""),
   },
   {
-    title: "จังหวัด",
-    dataIndex: "province",
-    key: "province",
+    title: "ชื่อเล่น",
+    dataIndex: "nickname",
+    key: "nickname",
     width: "20%",
     sorter: (a, b) => (a?.typename || "").localeCompare(b?.typename || ""),
   },
   {
-    title: "เบอร์โทร",
-    dataIndex: "tel",
-    key: "tel",
-    width: "20%",
+    title: "ระดับชั้น",
+    dataIndex: "degree",
+    key: "degree",
+    width: "15%",
     sorter: (a, b) => (a?.typename || "").localeCompare(b?.typename || ""),
   },
   {
-    title: "สถานะ",
-    dataIndex: "active_status",
-    key: "active_status",
-    width: "20%",
-    sorter: (a, b) => (a?.active_status || "").localeCompare(b?.active_status || ""),
-    render: (data) => (
-      <div>
-        {data === "Y" ? (
-          <Badge status="success" text="เปิดการใช้งาน" />
-        ) : (
-          <Badge status="error" text="ปิดการใช้การ" />
-        )}
-      </div>
-    ),
+    title: "โรงเรียน",
+    dataIndex: "school",
+    key: "school",
+    width: "25%",
+    sorter: (a, b) => (a?.typename || "").localeCompare(b?.typename || ""),
   },
   {
     title: "Action",
-    key: "operation",
+    key: "student_code",
+    dataIndex: "student_code",
     width: "10%",
     fixed: "right",
     render: (text, record) => (
@@ -75,7 +59,7 @@ export const accessColumn = ({ handleEdit, handleDelete, handleView }) => [
 ];
 
 export const Items = {
-  id: null,
+  student_code : null,
   stcode: null,
   stname: null,
   prename: null,

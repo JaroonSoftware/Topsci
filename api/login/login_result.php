@@ -9,6 +9,8 @@ session_start();
 // include('../../conn.php');
 include('../conn.php');
 include('../src/JWT.php');
+$db = new DbConnect;
+$conn = $db->connect();
 
 use Firebase\JWT\JWT; 
 // $db = new DbConnect;

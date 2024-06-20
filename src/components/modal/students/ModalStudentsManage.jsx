@@ -15,7 +15,7 @@ import { SaveFilled } from "@ant-design/icons";
 
 // import { customers } from '../../../pages/customers/customers.model.js';
 
-import CustomerService from "../../../service/Customer.Service.js";
+import CustomerService from "../../../service/Student.Service.js";
 import { CreateInput } from "thai-address-autocomplete-react";
 
 const InputThaiAddress = CreateInput();

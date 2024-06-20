@@ -6,11 +6,11 @@ import { Input, Typography } from "antd";
 import { SearchOutlined } from "@ant-design/icons";
 import { useForm } from 'antd/es/form/Form';
 
-import { ModalCustomersManage } from './modal-customers.js';
+import { ModalCustomersManage } from './modal-students.js';
 
-import { customersColumn } from "./modal-customers.model";
-import CustomerService from '../../../service/Customer.Service.js'; 
-import OptionService from '../../../service/Options.service';
+import { customersColumn } from "./modal-students.model.js";
+import CustomerService from '../../../service/Student.Service.js'; 
+import OptionService from '../../../service/Options.service.js';
 
 const ctmService = CustomerService();
 const opservice = OptionService();

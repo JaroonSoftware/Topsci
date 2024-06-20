@@ -70,3 +70,18 @@
     border-top: 0px solid #d9d9d9;
     padding-inline: 12px;
 }
+.item-manage .radio-group-student-gender .ant-radio-button-wrapper {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    text-align: center; /* Center text within button */
+  }
+  
+.item-manage .radio-group-student-gender .ant-radio-button-wrapper .ant-radio-button {
+    display: flex;
+    justify-content: center; /* Center horizontally */
+    align-items: center; /* Center vertically */
+    text-align: center; /* Center text within button */
+    height: 100%; /* Ensure full height of the button */
+    padding: 0 15px; /* Adjust padding as needed */
+  }

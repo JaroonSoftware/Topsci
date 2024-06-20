@@ -1,11 +1,12 @@
 import { FileTextFilled, ReconciliationFilled } from "@ant-design/icons";
 import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
-import { MdOutlineDashboard } from "react-icons/md";
+import { MdOutlineDashboard,MdMenuBook  } from "react-icons/md";
 import { TiThLarge } from "react-icons/ti";
 import { GiDatabase } from "react-icons/gi";
-import { FaUserCircle } from "react-icons/fa";
+import { FaUserCircle,FaUserGraduate,FaBookOpen   } from "react-icons/fa";
 import { RiBox3Fill } from "react-icons/ri";
+import { VscRepoClone  } from "react-icons/vsc";
 let _nav = [
   {
     title: "MENU",
@@ -21,8 +22,8 @@ let _nav = [
     type: "group",
   },
   {
-    title: "ใบเสนอราคา",
-    icon: <FileTextFilled className="nav-ico" />,
+    title: "การเข้าเรียน",
+    icon: <VscRepoClone className="nav-ico" />,
     to: "/quotation",
   },
   {
@@ -31,45 +32,28 @@ let _nav = [
   },
 
   {
-    title: "ข้อมูลลูกค้า",
+    title: "ข้อมูลนักเรียน",
     icon: <RiTeamFill className="nav-ico" />,
-    to: "/customers",
+    to: "/students",
   },
   {
-    title: "ข้อมูลสินค้า",
-    icon: <GiDatabase className="nav-ico" />,
-    to: "/items",
+    title: "ข้อมูลครู",
+    icon: <FaUserGraduate className="nav-ico" />,
+    to: "/teachers",
   },
   {
-    title: "ประเภทสินค้า",
-    icon: <TiThLarge className="nav-ico" />,
-    to: "/itemtype",
-  },
-  {
-    title: "หน่วยสินค้า",
-    icon: <RiBox3Fill className="nav-ico" />,
-    to: "/unit",
+    title: "ประเภทวิชา",
+    icon: <MdMenuBook className="nav-ico" />,
+    to: "/subjects",
   },
   {
     title: "ผู้ใช้งาน",
     icon: <FaUserCircle className="nav-ico" />,
     to: "/users",
   },
-
   {
     title: "กำลังปรับปรุง",
     type: "group",
-  },
-  {
-    title: "ใบขายสินค้า",
-    icon: <ReconciliationFilled className="nav-ico" />,
-    to: "/so",
-    // to: "/1",
-  },
-  {
-    title: "ใบเสร็จรับเงิน",
-    icon: <TbReportMoney className="nav-ico" />,
-    to: "/receipt",
   },
 ];
 

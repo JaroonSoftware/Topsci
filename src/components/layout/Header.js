@@ -54,20 +54,8 @@ function Header({
     </svg>,
   ];
   const getIndexRoute = (r) => {
-    const linkRoute = r.split("/");
-    let routeString = r
-      .split("/")
-      .slice(0, 2)
-      .map((m, index) => {
-        let rInx = linkRoute.filter((f, i) => i <= index);
-
-        return {
-          title: capitalized(m),
-          href: `/${rInx.join("/")}${
-            index > 0 ? `/${r.split("/").slice(2).join("/")}` : ""
-          }`,
-        };
-      });
+    
+    let routeString = '';
 
     return routeString;
   };
@@ -128,19 +116,12 @@ function Header({
      
       <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
         <Col xs={12} sm={12} md={12} lg={12} xl={12} xxl={12}>
-          <Breadcrumb
-            items={[{ title: "Home", href: "/" }, ...getIndexRoute(name)]}
-          />
+          <Breadcrumb/>
           <div className="ant-page-header-heading">
             <span
               className="ant-page-header-heading-title"
               style={{ textTransform: "capitalize" }}
             >
-              {subName
-                .split("/")
-                .map((d) => capitalized(d))
-                .slice(0, 2)
-                .join(" : ")}
             </span>
           </div>
         </Col>
