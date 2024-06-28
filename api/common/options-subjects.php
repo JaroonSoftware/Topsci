@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     try { 
         $res = null;
         
-        $sql = "SELECT unitname as value,unitname as label FROM unit where active_status = 'Y'";
+        $sql = "SELECT subject_id as value,subject_name as label FROM subjects where active_status = 'Y'";
             // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

@@ -9,7 +9,7 @@ if ($_SERVER["REQUEST_METHOD"] == "GET"){
     try { 
         $res = null;
         
-        $sql = "SELECT typecode,typename,active_status FROM itemtype where active_status = 'Y'";
+        $sql = "SELECT CONCAT_WS(' ', first_name, last_name) AS teacher_name, teacher_id FROM `teachers` where active_status = 'Y'";
             // $type_code
             $stmt = $conn->prepare($sql); 
             $stmt->execute();

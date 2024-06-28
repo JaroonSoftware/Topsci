@@ -1,12 +1,8 @@
-import { FileTextFilled, ReconciliationFilled } from "@ant-design/icons";
-import { TbReportMoney } from "react-icons/tb";
 import { RiTeamFill } from "react-icons/ri";
 import { MdOutlineDashboard,MdMenuBook  } from "react-icons/md";
-import { TiThLarge } from "react-icons/ti";
-import { GiDatabase } from "react-icons/gi";
-import { FaUserCircle,FaUserGraduate,FaBookOpen   } from "react-icons/fa";
-import { RiBox3Fill } from "react-icons/ri";
+import { FaUserCircle,FaUserGraduate   } from "react-icons/fa";
 import { VscRepoClone  } from "react-icons/vsc";
+import { ImBooks } from "react-icons/im";
 let _nav = [
   {
     title: "MENU",
@@ -42,9 +38,14 @@ let _nav = [
     to: "/teachers",
   },
   {
-    title: "ประเภทวิชา",
+    title: "ข้อมูลวิชา",
     icon: <MdMenuBook className="nav-ico" />,
     to: "/subjects",
+  },
+  {
+    title: "ข้อมูลคอร์สเรียน",
+    icon: <ImBooks className="nav-ico" />,
+    to: "/courses",
   },
   {
     title: "ผู้ใช้งาน",

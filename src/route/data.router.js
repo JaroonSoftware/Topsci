@@ -8,6 +8,7 @@ import { Unit, UnitAccess, UnitManage } from "../pages/unit";
 import { Student, StudentAccess, StudentManage } from "../pages/students";
 import { Teacher, TeacherAccess, TeacherManage } from "../pages/teachers";
 import { Subjects, SubjectsAccess, SubjectsManage } from "../pages/subjects";
+import { Courses, CoursesAccess, CoursesManage } from "../pages/courses";
 
 export const DataRouter = (
   <>
@@ -45,5 +46,11 @@ export const DataRouter = (
       <Route index element={<SubjectsAccess />} />
       <Route path="manage/:action" element={<SubjectsManage />} />
     </Route>
+
+    <Route path="/courses/" exact element={<Courses />}>
+      <Route index element={<CoursesAccess />} />
+      <Route path="manage/:action" element={<CoursesManage />} />
+    </Route>
+    
   </>
 );
