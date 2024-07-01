@@ -107,8 +107,8 @@ try {
         $stmt->bindParam(":course_name", $courses->course_name, PDO::PARAM_STR);
         $stmt->bindParam(":subject_id", $courses->subject_id, PDO::PARAM_STR);
         $stmt->bindParam(":price", $courses->price, PDO::PARAM_STR);
-        $stmt->bindParam(":time_from", $courses->time_from, PDO::PARAM_STR);
-        $stmt->bindParam(":time_to", $courses->time_to, PDO::PARAM_STR);
+        $stmt->bindParam(":time_from", $courses->timefrom, PDO::PARAM_STR);
+        $stmt->bindParam(":time_to", $courses->timeto, PDO::PARAM_STR);
         $stmt->bindParam(":number_of_sessions", $courses->number_of_sessions, PDO::PARAM_STR); 
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);  
         $stmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_STR); 
