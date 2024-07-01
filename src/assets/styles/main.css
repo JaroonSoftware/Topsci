@@ -1866,9 +1866,9 @@ body {
   max-width: 500px;
   margin: auto;
   box-shadow: 0 20px 27px rgb(0 0 0 / 5%);
-  border-radius: 12px;
-  margin-top: -190px;
-  margin-bottom: 20px;
+  border-radius: 20px;
+  /* margin-top: -190px; */
+  /* margin-bottom: 20px; */
 }
 .card-signup h5 {
   text-align: center;
@@ -3371,3 +3371,9 @@ button, [type='button'], [type='reset'], [type='submit'] {
 .ant-popconfirm.ant-popover {
   z-index: 10001 !important;
 } */
+container {
+  flex: 1;
+  backgroundColor: '#fff';
+  alignItems: 'center';
+  justifyContent: 'center';
+}
