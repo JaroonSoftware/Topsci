@@ -17,7 +17,7 @@ import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
 import CoursesService from "../../service/Courses.service";
-import { SaveFilled, SearchOutlined } from "@ant-design/icons";
+import { SaveFilled } from "@ant-design/icons";
 import ModalTeacher from "../../components/modal/teacher/ModalTeacher";
 import ModalStudent from "../../components/modal/student/ModalStudents";
 import {
@@ -25,13 +25,14 @@ import {
   teacherColumn,
 } from "./courses.model";
 
-import { delay, comma } from "../../utils/util";
+import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { LuPackageSearch } from "react-icons/lu";
 import { LuPrinter } from "react-icons/lu";
+const { confirm } = Modal;
 const opservice = OptionService();
 const coursesservice = CoursesService();
 
@@ -45,6 +46,7 @@ function CoursesManage() {
   const [form] = Form.useForm();
   const { RangePicker } = DatePicker;
   const [optionSubjects, setOptionSubjects] = useState([]);
+  const [optionCouse, setOptionCouse] = useState([]);
 
   /** Modal handle */
   const [openStudent, setOpenStudent] = useState(false);
@@ -56,7 +58,7 @@ function CoursesManage() {
   const [listStudent, setListStudent] = useState([]);
 
   const [listTeacher, setListTeacher] = useState([]);
-
+ 
   const [formDetail, setFormDetail] = useState([]);
 
   const filterOption = (input, option) =>
@@ -69,7 +71,7 @@ function CoursesManage() {
 
   useEffect(() => {
     GetItemsSubjects();
-    
+    GetListCourse();
     const initial = async () => {
       if (config?.action !== "create") {
         const res = await coursesservice
@@ -97,6 +99,12 @@ function CoursesManage() {
       setOptionSubjects(data);
     });
   };
+  const GetListCourse = () => {
+    opservice.optionsCourse().then((res) => {
+      let { data } = res.data;
+      setOptionCouse(data);
+    });
+  };
 
   /** Function modal handle */
   const handleChoosedStudent = (value) => {
@@ -104,6 +112,32 @@ function CoursesManage() {
   };
   const handleChoosedTeacher = (value) => {
     setListTeacher(value);
+  };
+  const handleChangeCourse = (value, option) => {
+    confirm({
+      title: 'ยืนยันการเลือก',
+      content: `เลือกคอร์สเรียนที่จะนำเข้ารายชื่อ : ${option.label}`,
+      okText: 'ยืนยัน', 
+      cancelText: 'ยกเลิก', 
+      onOk: async () => {
+        try {
+          // เรียกข้อมูลจาก backend
+        const res = await coursesservice.getListStudent({ code: value }).catch((error) => message.error("get list data fail."));
+        const { data } = res.data; 
+        setListStudent(null);
+        setListStudent(data);
+        message.success('ดึงข้อมูลสำเร็จ');
+        } catch (error) {
+          console.error('Error fetching data:', error);
+          message.error('มีบางอย่างผิดพลาด กรุณาลองใหม่อีกครั้ง');
+        }
+      },
+      onCancel() {
+        form.setFieldsValue({
+          choose_course: null,
+        });
+      },
+    });
   };
 
 
@@ -297,14 +331,31 @@ function CoursesManage() {
 
   const TitleTableStudent = (
     <Flex className="width-100" align="center">
-      <Col span={12} className="p-0">
-        <Flex gap={4} justify="start" align="center">
-          <Typography.Title className="m-0 !text-zinc-800" level={4}>
-            รายชื่อนักเรียน
+      <Col span={14} className="p-0">
+        <Flex gap={15} justify="start" align="center">
+          <Typography.Title className="m-0 !text-zinc-800" level={4} >
+            รายชื่อนักเรียน {config?.action === "create" && ( ': นำเข้าจากคอร์สอื่น ' )}
           </Typography.Title>
+        {config?.action === "create" && (
+          <Form.Item
+          name="choose_course"
+          rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+          style={{ margin: 0 }}
+          >
+            <Select
+              size="large"
+              placeholder="เลือกคอร์สเรียนอื่นๆ เพื่อนำเข้ารายชื่อ"
+              showSearch
+              filterOption={filterOption}
+              options={optionCouse}
+              style={{ flex: 1,width: '350px' }}
+              onChange={handleChangeCourse}
+            ></Select>
+          </Form.Item>
+        )}
         </Flex>
       </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
+      <Col span={10} style={{ paddingInline: 0 }}>
         <Flex justify="end">
           <Button
             icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
@@ -426,12 +477,7 @@ function CoursesManage() {
             className="width-100"
             autoComplete="off"
           >
-            <Card
-              title={
-                <>
-                </>
-              }
-            >
+            <Card title={config?.title}>
               <Row className="m-0" gutter={[12, 12]}>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!mb-3 !mt-1">

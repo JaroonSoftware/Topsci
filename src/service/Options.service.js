@@ -7,6 +7,7 @@ const API_URL = {
   OPTION_ITEMSTYPE: `/common/options-itemstype.php`,
   OPTION_UNIT: `/common/options-unit.php`,
   OPTION_SUBJECTS: `/common/options-subjects.php`,
+  OPTION_COURSE: `/common/options-course.php`,
 };
  
 
@@ -18,6 +19,7 @@ const OptionService = () => {
   const optionsItemstype = () => api.get(`${API_URL.OPTION_ITEMSTYPE}`, { ignoreLoading : true });
   const optionsUnit = () => api.get(`${API_URL.OPTION_UNIT}`, { ignoreLoading : true });
   const optionsSubjects = () => api.get(`${API_URL.OPTION_SUBJECTS}`, { ignoreLoading : true });
+  const optionsCourse = () => api.get(`${API_URL.OPTION_COURSE}`, { ignoreLoading : true });
 
   return {
     optionsItems,
@@ -27,6 +29,7 @@ const OptionService = () => {
     optionsItemstype,
     optionsUnit,
     optionsSubjects,
+    optionsCourse,
   };
 };
 
