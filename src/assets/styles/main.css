@@ -1792,7 +1792,10 @@ body {
 }
 
 .layout-default.ant-layout.layout-sign-up {
-  padding: 11px;
+  /* padding: 110px; */
+    height: auto;
+   /* background-image: url("../images/BG-.png"); */
+   background-color: #401d58;
 }
 .header-col.header-nav li:after {
   display: none;
@@ -1869,6 +1872,16 @@ body {
   border-radius: 20px;
   /* margin-top: -190px; */
   /* margin-bottom: 20px; */
+  /* background-image: url("../images/CardPic.png"); */
+}
+.im-signup {
+  width: 100%;
+  max-width: 500px;
+  margin: auto;
+  border-radius: 20px;
+  /* margin-top: -190px; */
+  /* margin-bottom: 20px; */
+  /* background-image: url("../images/CardPic.png"); */
 }
 .card-signup h5 {
   text-align: center;
@@ -3351,9 +3364,7 @@ button.ant-btn-primary {
 }
 
 button, [type='button'], [type='reset'], [type='submit'] {
-  -webkit-appearance: button;
-  background-color: #fff;
-  background-image: none;
+  background-color: #ffffff;
 }
 
 .collapse {
@@ -3371,9 +3382,3 @@ button, [type='button'], [type='reset'], [type='submit'] {
 .ant-popconfirm.ant-popover {
   z-index: 10001 !important;
 } */
-container {
-  flex: 1;
-  backgroundColor: '#fff';
-  alignItems: 'center';
-  justifyContent: 'center';
-}
