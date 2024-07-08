@@ -45,7 +45,7 @@ const Sidenav = () => {
       <hr />
 
       {/* <Sidebar style={{minWidth:"100%", width:"100%"}} > */}
-        <Menu theme="light" mode="inline">
+        <Menu>
           {nav.map((item, idx) => {
             return ( !item?.type ? (
               <MenuItem

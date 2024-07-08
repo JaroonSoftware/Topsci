@@ -112,10 +112,8 @@ const UsersAccess = () => {
           key: "1",
           label: (
             <>
-              <Typography.Title level={5}>
-                <SearchOutlined />
-                ค้นหา
-              </Typography.Title>
+              <SearchOutlined />
+              ค้นหา
             </>
           ),
           children: (
@@ -239,7 +237,6 @@ const UsersAccess = () => {
                 rowKey="cuscode"
                 columns={column}
                 dataSource={accessData}
-                
               />
             </Col>
           </Row>

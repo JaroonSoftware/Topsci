@@ -1,7 +1,7 @@
 /* eslint-disable react-hooks/exhaustive-deps */
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import { Card, message,Select } from "antd";
+import { Card, message, Select } from "antd";
 import { Collapse, Form, Flex, Row, Col, Space } from "antd";
 import { Input, Button, Table, Typography } from "antd";
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
@@ -123,17 +123,15 @@ const StudentAccess = () => {
           key: "1",
           label: (
             <>
-              <Typography.Title level={5}>
-                <SearchOutlined />
-                ค้นหา
-              </Typography.Title>
+              <SearchOutlined />
+              ค้นหา
             </>
           ),
           children: (
             <>
               <Form form={form} layout="vertical" autoComplete="off">
                 <Row gutter={[8, 8]}>
-                <Col xs={24} sm={6} md={6} lg={6} xl={6}>
+                  <Col xs={24} sm={6} md={6} lg={6} xl={6}>
                     <Form.Item
                       label="ชื่อ"
                       name="firstname"
@@ -161,7 +159,7 @@ const StudentAccess = () => {
                     </Form.Item>
                   </Col>
                 </Row>
-                  {/* <Col xs={24} sm={6} md={6} lg={6} xl={6}>
+                {/* <Col xs={24} sm={6} md={6} lg={6} xl={6}>
                     <Form.Item
                       label="เบอร์โทร"
                       name="tel"
