@@ -17,3 +17,10 @@ button.ant-switch.ant-switch-checked {
     background: #1677ff;
 }
 
+.ant-collapse-header:hover  {
+    background-color: #f3f4f6;
+    border-radius: 8px 8px 8px 8px;
+}
+.card-search .ant-card-body {
+    padding: 2px; 
+}

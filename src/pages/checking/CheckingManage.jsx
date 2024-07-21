@@ -11,19 +11,17 @@ import {
   Typography,
   message,
   Select,
+  Badge,
 } from "antd";
 import dayjs from 'dayjs';
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
-import CoursesService from "../../service/Courses.service";
+import CheckingService from "../../service/Checking.service";
 import { SaveFilled } from "@ant-design/icons";
-import ModalTeacher from "../../components/modal/teacher/ModalTeacher";
-import ModalStudent from "../../components/modal/student/ModalStudents";
 import {
   studentColumn,
-  teacherColumn,
-} from "./courses.model";
+} from "./checking.model";
 
 import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
@@ -31,30 +29,22 @@ import { useLocation, useNavigate } from "react-router-dom";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
 import { BiMessageSquareAdd } from "react-icons/bi";
-import { LuPrinter } from "react-icons/lu";
 const { confirm } = Modal;
 const opservice = OptionService();
-const coursesservice = CoursesService();
+const checkingservice = CheckingService();
 
-const gotoFrom = "/courses";
+const gotoFrom = "/checking";
 
-function CoursesManage() {
+function CheckingManage() {
   const navigate = useNavigate();
   const location = useLocation();
 
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
   const { RangePicker } = DatePicker;
-  const [optionSubjects, setOptionSubjects] = useState([]);
-  const [optionCouse, setOptionCouse] = useState([]);
-
-  /** Modal handle */
-  const [openStudent, setOpenStudent] = useState(false);
-  const [openTeacher , setOpenTeacher] = useState(false);
-
+  const [optionTeacher, setOptionTeacher] = useState([]);
 
   /** Detail Data State */
-  const [listDetail, setListDetail] = useState([]);
   const [listStudent, setListStudent] = useState([]);
 
   const [listTeacher, setListTeacher] = useState([]);
@@ -70,18 +60,16 @@ function CoursesManage() {
   };
 
   useEffect(() => {
-    GetItemsSubjects();
-    GetListCourse();
+    GetItemsTeacher();
     const initial = async () => {
       if (config?.action !== "create") {
-        const res = await coursesservice
+        const res = await checkingservice
           .get(config?.code)
           .catch((error) => message.error("get Course data fail."));
         const {
-          data: { courses, teacher, student },
+          data: { courses, student },
         } = res.data;
         setFormDetail(courses);
-        setListTeacher(teacher);
         setListStudent(student);
         form.setFieldsValue({ ...courses });
         form.setFieldsValue({
@@ -93,53 +81,12 @@ function CoursesManage() {
     initial();
     return () => {};
   }, []);
-  const GetItemsSubjects = () => {
-    opservice.optionsSubjects().then((res) => {
+  const GetItemsTeacher = () => {
+    checkingservice.getTeacherbyCouse().then((res) => {
       let { data } = res.data;
-      setOptionSubjects(data);
+      setOptionTeacher(data);
     });
   };
-  const GetListCourse = () => {
-    opservice.optionsCourse().then((res) => {
-      let { data } = res.data;
-      setOptionCouse(data);
-    });
-  };
-
-  /** Function modal handle */
-  const handleChoosedStudent = (value) => {
-    setListStudent(value);
-  };
-  const handleChoosedTeacher = (value) => {
-    setListTeacher(value);
-  };
-  const handleChangeCourse = (value, option) => {
-    confirm({
-      title: 'ยืนยันการเลือก',
-      content: `เลือกคอร์สเรียนที่จะนำเข้ารายชื่อ : ${option.label}`,
-      okText: 'ยืนยัน', 
-      cancelText: 'ยกเลิก', 
-      onOk: async () => {
-        try {
-          // เรียกข้อมูลจาก backend
-        const res = await coursesservice.getListStudent({ code: value }).catch((error) => message.error("get list data fail."));
-        const { data } = res.data; 
-        setListStudent(null);
-        setListStudent(data);
-        message.success('ดึงข้อมูลสำเร็จ');
-        } catch (error) {
-          console.error('Error fetching data:', error);
-          message.error('มีบางอย่างผิดพลาด กรุณาลองใหม่อีกครั้ง');
-        }
-      },
-      onCancel() {
-        form.setFieldsValue({
-          choose_course: null,
-        });
-      },
-    });
-  };
-
 
   const handleConfirm = () => {
     form
@@ -162,11 +109,10 @@ function CoursesManage() {
         }
         const courses = { ...formDetail, ...v }
         const student = listStudent;
-        const teacher = listTeacher;
 
-        const parm = { courses, student , teacher };
+        const parm = { courses, student  };
         //console.log(parm);
-        const actions = config?.action !== "create" ? coursesservice.update : coursesservice.create;
+        const actions = config?.action !== "create" ? checkingservice.update : checkingservice.create;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -238,67 +184,51 @@ function CoursesManage() {
   /** setting column table */
   //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
   const columnstudent = studentColumn({ handleRemoveStudent });
-  const columnteacher = teacherColumn({ handleRemoveTeacher });
 
   const SectionCourses = (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
       <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
           <Form.Item
-            label="ชื่อคอร์สเรียน"
+            label="คอร์สเรียน"
             name="course_name"
-            rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
-            <Input placeholder="กรอกชื่อคอร์สเรียน" />
+            <Input readOnly />
           </Form.Item>
       </Col>
       <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
-      <Form.Item
-          label="วิชาเรียน"
-          name="subject_id"
+          <Form.Item
+              label="วิชาเรียน"
+              name="subjects"
+          >
+           <Input readOnly />
+        </Form.Item>
+      </Col>
+      <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
+        <Form.Item
+          label="ครูผู้สอน"
+          name="teacher"
           rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
         >
           <Select
             size="large"
-            placeholder="เลือกวิชาเรียน"
+            placeholder="เลือกครูผู้สอน"
             showSearch
             filterOption={filterOption}
-            options={optionSubjects}
+            options={optionTeacher}
           ></Select>
         </Form.Item>
       </Col>
-      <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
+      <Col xs={24} sm={24} md={24} lg={4} xl={4} xxl={4}>
           <Form.Item
-            label="จำนวนรอบเรียน"
+            label="รอบเรียน"
             name="number_of_sessions"
-            rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
-            <InputNumber
-            min={1}
-            max={1000}
-            style={{width:'100%', height:40}}  
-            placeholder="กรอกจำนวนรอบเรียน"
-            className="custom-input-number"
-            />
+            <Input readOnly />
           </Form.Item>
       </Col>
-      <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
-          <Form.Item
-            label="ราคาคอร์ส"
-            name="price"
-            rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
-          >
-            <InputNumber
-            min={1}
-            max={10000000}
-            style={{width:'100%', height:40}}  
-            placeholder="กรอกราคาคอร์ส"
-            className="custom-input-number"
-            />
-          </Form.Item>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
+      <Col xs={24} sm={24} md={24} lg={10} xl={4} xxl={4}>
             <Form.Item 
-              label='เวลาเรียน' 
+              label='วันที่เรียน' 
               name='courses_time'
                rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
             >
@@ -313,71 +243,35 @@ function CoursesManage() {
                 />
             </Form.Item>
       </Col>
+      <Col xs={24} sm={24} md={24} lg={10} xl={4} xxl={4}>
+            <Form.Item 
+              label='เวลาเรียน' 
+              name='courses_time'
+               rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+            >
+                <RangePicker 
+                  placeholder={['เวลาตั้งแต่', 'เวลาถึง']} 
+                  style={{width:'100%', height:40}}  
+                  picker="time"
+                  format="HH:mm"
+                  showTime={{
+                    format: 'HH:mm',
+                  }}
+                  inputReadOnly
+                />
+            </Form.Item>
+      </Col>
     </Row>
   );
 
-  const TitleTableTeacher = (
-    <Flex className="width-100" align="center">
-      <Col span={12} className="p-0">
-        <Flex gap={4} justify="start" align="center">
-          <Typography.Title className="m-0 !text-zinc-800" level={4}>
-            รายชื่อครู
-          </Typography.Title>
-        </Flex>
-      </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex justify="end">
-          <Button
-            icon={<BiMessageSquareAdd style={{ fontSize: "1.2rem" }} />}
-            className="bn-center justify-center bn-primary-outline"
-            onClick={() => {
-              setOpenTeacher(true);
-            }}
-          >
-            เพิ่มครู
-          </Button>
-        </Flex>
-      </Col>
-    </Flex>
-  );
 
   const TitleTableStudent = (
     <Flex className="width-100" align="center">
       <Col span={14} className="p-0">
         <Flex gap={15} justify="start" align="center">
           <Typography.Title className="m-0 !text-zinc-800" level={4} >
-            รายชื่อนักเรียน {config?.action === "create" && ( ': นำเข้าจากคอร์สอื่น ' )}
+            รายชื่อนักเรียน
           </Typography.Title>
-        {config?.action === "create" && (
-          <Form.Item
-          name="choose_course"
-          rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
-          style={{ margin: 0 }}
-          >
-            <Select
-              size="large"
-              placeholder="เลือกคอร์สเรียนอื่นๆ เพื่อนำเข้ารายชื่อ"
-              showSearch
-              filterOption={filterOption}
-              options={optionCouse}
-              style={{ flex: 1,width: '350px' }}
-              onChange={handleChangeCourse}
-            ></Select>
-          </Form.Item>
-        )}
-        </Flex>
-      </Col>
-      <Col span={10} style={{ paddingInline: 0 }}>
-        <Flex justify="end">
-          <Button
-            icon={<BiMessageSquareAdd style={{ fontSize: "1.2rem" }} />}
-            className="bn-center justify-center bn-primary-outline"
-            onClick={() => {
-              setOpenStudent(true);
-            }}
-          >
-            เพิ่มนักเรียน
-          </Button>
         </Flex>
       </Col>
     </Flex>
@@ -402,24 +296,6 @@ function CoursesManage() {
     </>
   );
 
-  const SectionTeacher = (
-    <>
-      <Flex className="width-100" vertical gap={4}>
-        <Table
-          title={() => TitleTableTeacher}
-          bordered
-          dataSource={listTeacher}
-          columns={columnteacher}
-          pagination={false}
-          rowKey="teacher_id"
-          scroll={{ x: "max-content" }}
-          locale={{
-            emptyText: <span>No data available, please add some data.</span>,
-          }}
-        />
-      </Flex>
-    </>
-  );
 
   ///** button */
 
@@ -433,20 +309,6 @@ function CoursesManage() {
           <ButtonBack target={gotoFrom} />
         </Flex>
       </Col>
-      <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex gap={4} justify="end">
-          {!!formDetail.quotcode && (
-            <Button
-              icon={<LuPrinter />}
-              onClick={() => {
-              }}
-              className="bn-center !bg-orange-400 !text-white !border-transparent"
-            >
-              PRINT QUOTATION{" "}
-            </Button>
-          )}
-        </Flex>
-      </Col>
     </Row>
   );
 
@@ -458,6 +320,21 @@ function CoursesManage() {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start">
           <ButtonBack target={gotoFrom} />
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex gap={4} justify="end">
+          <Button
+            className="bn-center justify-center"
+            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+            type="primary"
+            style={{ width: "9.5rem" }}
+            onClick={() => {
+              handleConfirm();
+            }}
+          >
+            Save
+          </Button>
         </Flex>
       </Col>
     </Row>
@@ -485,15 +362,7 @@ function CoursesManage() {
                 </Col>
                 <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                   <Divider orientation="left" className="!my-0">
-                    ข้อมูลครู
-                  </Divider>
-                  <Card style={{ backgroundColor: "#f0f0f0" }}>
-                  {SectionTeacher}
-                  </Card>
-                </Col>
-                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
-                  <Divider orientation="left" className="!my-0">
-                    ข้อมูลนักเรียน
+                    รายชื่อนักเรียน
                   </Divider>
                   <Card style={{ backgroundColor: "#f0f0f0" }}>
                   {SectionStudent}
@@ -505,30 +374,8 @@ function CoursesManage() {
           {SectionBottom}
         </Space>
       </div>
-
-      {openStudent && (
-        <ModalStudent
-          show={openStudent}
-          close={() => setOpenStudent(false)}
-          values={(v) => {
-            handleChoosedStudent(v);
-          }}
-          selected={listStudent}
-        ></ModalStudent>
-      )} 
-
-      {openTeacher && (
-        <ModalTeacher
-          show={openTeacher}
-          close={() => setOpenTeacher(false)}
-          values={(v) => {
-            handleChoosedTeacher(v);
-          }}
-          selected={listTeacher}
-        ></ModalTeacher>
-      )}
     </div>
   );
 }
 
-export default CoursesManage;
+export default CheckingManage;
