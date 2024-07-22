@@ -110,9 +110,9 @@ const CheckingAccess = () => {
         navigate("manage/create", { state: { config: {...mngConfig, title:"สร้างคอร์สเรียน", action:"create"} } }); 
     }
 
-    const handleEdit = (data) => {
+    const handleCheck = (data) => {
         debugger
-         navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขคอร์สเรียน", action:"edit", code:data?.course_id} }, replace:true } );
+         navigate("manage/check", { state: { config: {...mngConfig, title:"เช็คชื่อการเข้าเรียน", action:"check", code:data?.course_id} }, replace:true } );
     }; 
 
     const handleDelete = (data) => { 
@@ -124,11 +124,11 @@ const CheckingAccess = () => {
         })
         .catch(err => {
             console.log(err);
-            message.error("Request error!");
+            message.error("Request error!"); 
         });
     }; 
     
-    const column = accessColumn( {handleEdit, handleDelete});
+    const column = accessColumn( {handleCheck, handleDelete});
 
     const getData = (data) => {
         checkingService.search(data, { ignoreLoading: loading}).then( res => {

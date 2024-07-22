@@ -1,4 +1,4 @@
-import { Button, Popconfirm, Space, Badge } from "antd"; 
+import { Button, Popconfirm, Space, Badge, Switch, Form, Input } from "antd"; 
 import "../../assets/styles/banks.css"
 // import { Typography } from "antd"; 
 // import { Popconfirm, Button } from "antd";
@@ -14,7 +14,7 @@ export const componentsEditable = {
 };
 
 /** get sample column */
-export const accessColumn = ({handleChecking}) => [
+export const accessColumn = ({handleCheck}) => [
   {
     title: "ชื่อคอร์ส",
     key: "course_name",
@@ -65,7 +65,7 @@ export const accessColumn = ({handleChecking}) => [
         <Button
           icon={<BsCardChecklist />}
           className="checking-button"
-          onClick={(e) => handleChecking(record)}
+          onClick={(e) => handleCheck(record)}
           size="small"
         />
       </Space>
@@ -73,7 +73,7 @@ export const accessColumn = ({handleChecking}) => [
   }, 
 ];
 
-export const studentColumn = ({handleRemoveStudent}) => [
+export const studentColumn = ({handleCheckChange, handleReasonChange}) => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
@@ -100,12 +100,38 @@ export const studentColumn = ({handleRemoveStudent}) => [
     align: "left",
   },
   {
-    title: "เช็คชื่อ",
-    align: "center",
-    key: "operation",
-    dataIndex: "operation",
-    render: (_, record, idx) => handleRemoveStudent(record),
-    width: '90px',
-    fixed: 'right',
+    title: 'เช็คชื่อ',
+    dataIndex: 'attendance',
+    key: 'attendance',
+    render: (text, student) => (
+      <Switch 
+        checked={student.attendance} 
+        onChange={(checked) => handleCheckChange(checked, student)} 
+      />
+    ),
+  },
+  {
+    title: 'เหตุผลที่ไม่มาเรียน',
+    dataIndex: 'reason',
+    key: 'reason',
+    render: (text, student) => (
+      <Form.Item
+        name={`reason_${student.code}`}
+        rules={[
+          {
+            required: !student.attendance,
+            message: 'กรุณากรอกเหตุผลที่ไม่มาเรียน',
+          },
+        ]}
+        initialValue={student.reason}
+      >
+        <Input 
+          value={student.reason} 
+          onChange={(e) => handleReasonChange(e, student)} 
+          placeholder="กรอกเหตุผลที่ไม่มาเรียน" 
+          disabled={student.attendance} 
+        />
+      </Form.Item>
+    ),
   },
 ];

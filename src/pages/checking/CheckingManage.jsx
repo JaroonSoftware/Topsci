@@ -12,6 +12,7 @@ import {
   message,
   Select,
   Badge,
+  Switch,
 } from "antd";
 import dayjs from 'dayjs';
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
@@ -62,7 +63,7 @@ function CheckingManage() {
   useEffect(() => {
     GetItemsTeacher();
     const initial = async () => {
-      if (config?.action !== "create") {
+      if (config?.action === "check") {
         const res = await checkingservice
           .get(config?.code)
           .catch((error) => message.error("get Course data fail."));
@@ -159,27 +160,14 @@ function CheckingManage() {
       />
     ) : null;
   };
-  const handleDeleteTeacher = (code) => {
-    const itemDetail = [...listTeacher];
-    const newData = itemDetail.filter((item) => item?.teacher_id !== code);
-    setListTeacher([...newData]);
+  const handleSwitchChange = (checked, student) => {
+    const updatedStudents = listStudent.map(s => s.id === student.id ? { ...s, attendance: checked, reason: checked ? '' : s.reason } : s);
+    setListStudent(updatedStudents);
   };
-  const handleRemoveTeacher = (record) => {
-    const itemDetail = [...listTeacher];
-    return itemDetail.length >= 1 ? (
-      <Button
-        className="bt-icon"
-        size="small"
-        danger
-        icon={
-          <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
-        }
-        onClick={() => handleDeleteTeacher(record?.teacher_id)}
-        disabled={!record?.teacher_id}
-      />
-    ) : null;
+  const handleReasonChange = (e, student) => {
+    const updatedStudents = listStudent.map(s => s.id === student.id ? { ...s, reason: e.target.value } : s);
+    setListStudent(updatedStudents);
   };
-
 
   /** setting column table */
   //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
