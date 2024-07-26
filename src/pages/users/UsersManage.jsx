@@ -207,12 +207,7 @@ const UsersManage = () => {
               placeholder="เลือกตำแหน่ง"
               options={[
                 { value: "Admin", label: "Admin" },
-                { value: "พนักงานขาย", label: "พนักงานขาย" },
                 { value: "ธุรการ", label: "ธุรการ" },
-                { value: "จัดซื้อ", label: "จัดซื้อ" },
-                { value: "ช่าง", label: "ช่าง" },
-                { value: "กรรมการ", label: "กรรมการ" },
-                { value: "ผู้จัดการสาขา", label: "ผู้จัดการสาขา" },
               ]}
             />
           </Form.Item>
