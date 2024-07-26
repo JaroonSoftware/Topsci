@@ -3,7 +3,7 @@ import React from 'react';
 import { Link, useLocation } from "react-router-dom";
 import { Menu, MenuItem } from "react-pro-sidebar";
 import { Badge, Flex } from "antd";
-import logo from "../../assets/images/logo_nsf.png";
+import logo from "../../assets/images/logo_top.png";
 import nav from "../../nav";
 
 import { Authenticate } from '../../service/Authenticate.service.js'; 
@@ -45,7 +45,7 @@ const Sidenav = () => {
       <hr />
 
       {/* <Sidebar style={{minWidth:"100%", width:"100%"}} > */}
-        <Menu theme="light" mode="inline">
+        <Menu>
           {nav.map((item, idx) => {
             return ( !item?.type ? (
               <MenuItem

@@ -12,6 +12,8 @@ import {
   Space,
   Flex,
   Modal,
+  Row,
+  Col,
 } from "antd";
 import { message } from "antd";
 import logo4 from "../assets/images/logo.png";
@@ -102,61 +104,88 @@ const Login = () => {
   return (
     <>
       {logined ? (
-        <div
-          className="layout-default ant-layout layout-sign-up"
-          style={{ paddingTop: 200,backgroundImage: (logo4) }}
-          
-        >
-          <Card className="card-signup" style={{ backgroundColor: '#44008b',}}>
-            <Space direction="vertical" className="width-100"  size={12}>
-              <div className="flex justify-center ">
-                <img
-                  style={{ width: 150 }}
-                  src={logo4}
-                  alt="่ninestartfood, jaroon logo"
-                />
-              </div>
-              <Form
-                name="basic"
-                initialValues={{ remember: true }}
-                onFinish={onFinish}
-                onFinishFailed={onFinishFailed}
-                className="row-col"
-              >
-                <Flex gap={8} className="width-100 md:px-5" vertical>
-                  <Form.Item
-                    name="username"
-                    rules={[{ required: true, message: "กรุณากรอก username!" }]}
-                  >
-                    <Input placeholder="Username" />
-                  </Form.Item>
-                  <Form.Item
-                    name="password"
-                    rules={[{ required: true, message: "กรุณาใส่รหัสผ่าน!" }]}
-                  >
-                    <Input.Password
-                      placeholder="Password"
-                      className="input-40"
-                    />
-                  </Form.Item>
-                  <Form.Item>
-                    <Button style={{ width: "100%",textShadowColor: 'rgba(0, 0, 0, 0.75)',}} htmlType="submit">
-                      LOGIN
-                    </Button>
-                  </Form.Item>
-                </Flex>
-              </Form>
-            </Space>
-          </Card>
+        <Layout className="layout-default ant-layout layout-sign-up">
+          <Header></Header>
+
+          <Content className="p-0">
+            <Row>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12} span={12}>
+                <div   className="im-signup  header-solid ant-card pt-0">
+                  <img
+                  
+                    src={logo4}
+                    alt="่ninestartfood, jaroon logo"
+                  />
+                </div>
+              </Col>
+              <Col xs={24} sm={24} md={12} lg={12} xl={12} xxl={12} span={12} style={{paddingTop: 30}}>
+                <Card
+                  className="card-signup header-solid ant-card pt-0"
+                  bordered="false"
+                >
+                  <Space direction="vertical" className="width-100" size={12}>
+                    <Form
+                      name="basic"
+                      initialValues={{ remember: true }}
+                      onFinish={onFinish}
+                      onFinishFailed={onFinishFailed}
+                      className="row-col"
+                    >
+                      <Flex
+                        gap={8}
+                        className="width-100 md:px-5"
+                        vertical
+                        style={{ padding: 40 }}
+                      >
+                        <div className="content">
+                          <Title>LOGIN</Title>
+                          <p className="text-lg">
+                            Enter your username and password to login
+                          </p>
+                        </div>
+                        <Form.Item
+                          name="username"
+                          rules={[
+                            { required: true, message: "กรุณากรอก username!" },
+                          ]}
+                        >
+                          <Input placeholder="Username" />
+                        </Form.Item>
+                        <Form.Item
+                          name="password"
+                          rules={[
+                            { required: true, message: "กรุณาใส่รหัสผ่าน!" },
+                          ]}
+                        >
+                          <Input.Password
+                            placeholder="Password"
+                            className="input-40"
+                          />
+                        </Form.Item>
+                        <Form.Item>
+                          <Button
+                            style={{ width: "100%" }}
+                            type="primary"
+                            htmlType="submit"
+                          >
+                            LOGIN
+                          </Button>
+                        </Form.Item>
+                      </Flex>
+                    </Form>
+                  </Space>
+                </Card>
+              </Col>
+            </Row>
+          </Content>
           <Footer>
             <p className="copyright">
               <a href="https://www.facebook.com/jaroonsoft">
-                {" "}
-                Jaroon Software Co., Ltd.{" "}
+                Jaroon Software Co., Ltd.
               </a>
             </p>
           </Footer>
-        </div>
+        </Layout>
       ) : (
         <Navigate to="/login" state={{ from: location }} replace />
       )}
