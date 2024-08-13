@@ -17,66 +17,46 @@ try {
         $_POST = json_decode($rest_json, true); 
         extract($_POST, EXTR_OVERWRITE, "_");
 
-        // var_dump($_POST);
-        $sql = "insert courses (`subject_id`, `course_name`, `price`,
-        `time_from`, `time_to`, `number_of_sessions`, `created_by`) 
-        values (:subject_id,:course_name,:price,:time_from,:time_to,:number_of_sessions,:action_user)";
+        // insert sessions
+        $sql = "INSERT INTO `sessions`(`course_id`, `teacher_id`, `session_no`, `session_date`, `created_by`)  
+        values (:course_id,:teacher_id,:session_no,:session_date,:action_user)";
 
         $stmt = $conn->prepare($sql);
-        if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}"); 
-
+        if(!$stmt) throw new PDOException("sessions data value prepare error => {$conn->errorInfo()}"); 
         $courses = (object)$courses;  
-        $stmt->bindParam(":subject_id", $courses->subject_id, PDO::PARAM_STR);
-        $stmt->bindParam(":course_name", $courses->course_name, PDO::PARAM_STR);
-        $stmt->bindParam(":price", $courses->price, PDO::PARAM_STR);
-        $stmt->bindParam(":time_from", $courses->timefrom, PDO::PARAM_STR);
-        $stmt->bindParam(":time_to", $courses->timeto, PDO::PARAM_STR);
-        $stmt->bindParam(":number_of_sessions", $courses->number_of_sessions, PDO::PARAM_STR);
+        $session_date = new DateTime($courses->session_date);
+        $stmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_INT);
+        $stmt->bindParam(":teacher_id", $courses->teacher, PDO::PARAM_INT);
+        $stmt->bindParam(":session_no", $courses->session_no, PDO::PARAM_STR);
+        $stmt->bindParam(":session_date", $session_date->format('Y-m-d'), PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR); 
 
         if(!$stmt->execute()) {
             $error = $conn->errorInfo();
-            throw new PDOException("Insert data error => $error");
+            throw new PDOException("Insert sessions data error => $error");
             die;
         }
-
-        $courseId = $conn->lastInsertId();
-        // var_dump($master); exit;
+        $sessionId = $conn->lastInsertId();
         
-        $sql = "insert into courses_teacher (course_id,teacher_id)
-        values (:course_id,:teacher_id)";
+        // insert attendance
+        $sql = "insert into attendance (session_id,student_code,status,remarks)
+        values (:session_id,:student_code,:status,:remarks)";
         $stmt = $conn->prepare($sql);
-        if(!$stmt) throw new PDOException("Insert courses teacher data error => {$conn->errorInfo()}");
-
-        // $detail = $detail;  
-        //Insert Courses Teacher
-        foreach( $teacher as $ind => $val){
-            $val = (object)$val;
-            $stmt->bindParam(":course_id", $courseId, PDO::PARAM_STR);
-            $stmt->bindParam(":teacher_id", $val->teacher_id, PDO::PARAM_STR);
-            
-            if(!$stmt->execute()) {
-                $error = $conn->errorInfo();
-                throw new PDOException("Insert data error => $error"); 
-            }
-        } 
-        //Insert Courses Student
-        $sql = "insert into courses_student (course_id,student_code)
-        values (:course_id,:student_code)";
-        $stmt = $conn->prepare($sql);
-        if(!$stmt) throw new PDOException("Insert courses student data error => {$conn->errorInfo()}");
+        if(!$stmt) throw new PDOException("Insert attendance prepare data error => {$conn->errorInfo()}");
 
         foreach( $student as $ind => $val){
             $val = (object)$val;
-            $stmt->bindParam(":course_id", $courseId, PDO::PARAM_STR);
+            $stmt->bindParam(":session_id", $sessionId, PDO::PARAM_INT);
             $stmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
+            $attendance = $val->attendance ? 'Y' : 'N';
+            $stmt->bindParam(":status", ($attendance) , PDO::PARAM_STR);
+            $stmt->bindParam(":remarks", ($val->reason) , PDO::PARAM_STR);
             
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
-                throw new PDOException("Insert data error => $error"); 
+                throw new PDOException("Insert attendance error => $error"); 
             }
-        } 
-
+        }
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data"=> array("course" => $courses->course_name)));
@@ -193,10 +173,13 @@ try {
         echo json_encode(array("status"=> 1));
     } else  if($_SERVER["REQUEST_METHOD"] == "GET"){
         $code = $_GET["code"]; 
-        $sql = "SELECT c.* ";
-        $sql .= " FROM `courses` c ";
-        $sql .= " where c.course_id = :code";
-
+        $sql = " 
+            select c.*,
+            s.*,
+            (SELECT COUNT(course_id)+1 FROM sessions WHERE course_id = c.course_id) AS session_no
+            from courses c        
+            left join subjects s on c.subject_id = s.subject_id
+            where c.course_id = :code and c.active_status = 'Y'";
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute([ 'code' => $code ])){
             $error = $conn->errorInfo(); 
@@ -205,7 +188,7 @@ try {
         }
         $courses = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "SELECT t.teacher_id,CONCAT_WS(' ',t.first_name,t.last_name) as teacher_name ";
+        $sql = "SELECT t.teacher_id as value,CONCAT_WS(' ',t.first_name,t.last_name) as label ";
         $sql .= " from courses_teacher ct left join teachers t on ct.teacher_id = t.teacher_id";        
         $sql .= " where ct.course_id  = :code";
         

@@ -105,10 +105,6 @@ const CheckingAccess = () => {
         
         handleSearch()
     }
-    // console.log(form);
-    const hangleAdd = () => {  
-        navigate("manage/create", { state: { config: {...mngConfig, title:"สร้างคอร์สเรียน", action:"create"} } }); 
-    }
 
     const handleCheck = (data) => {
         debugger

@@ -83,6 +83,9 @@ const ItemsManage = () => {
           const data = err?.response?.data;
           message.error(data?.message || "บันทึกไม่สำเร็จ");
         });
+    }).catch((errorInfo) => {
+      console.log("Validate Failed:", errorInfo);
+      message.error("โปรดตรวจสอบข้อมูลในฟอร์มก่อนบันทึก");
     });
   };
 

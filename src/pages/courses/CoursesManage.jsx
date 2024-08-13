@@ -177,12 +177,9 @@ function CoursesManage() {
             message.error("บันทึกข้อมูลไม่สำเร็จ.");
             console.warn(err);
           });
-      })
-      .catch((err) => {
-        Modal.error({
-          title: "This is an error message",
-          content: err,
-        });
+      }).catch((errorInfo) => {
+        console.log("Validate Failed:", errorInfo);
+        message.error("โปรดตรวจสอบข้อมูลในฟอร์มก่อนบันทึก");
       });
   };
 
@@ -351,7 +348,6 @@ function CoursesManage() {
         {config?.action === "create" && (
           <Form.Item
           name="choose_course"
-          rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           style={{ margin: 0 }}
           >
             <Select
@@ -458,6 +454,20 @@ function CoursesManage() {
       <Col span={12} className="p-0">
         <Flex gap={4} justify="start">
           <ButtonBack target={gotoFrom} />
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+        <Flex gap={4} justify="end">
+          <Button
+            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
+            type="primary"
+            style={{ width: "9.5rem" }}
+            onClick={() => {
+              handleConfirm();
+            }}
+          >
+            บันทึก
+          </Button>
         </Flex>
       </Col>
     </Row>

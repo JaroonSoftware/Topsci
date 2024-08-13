@@ -20,7 +20,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
             select c.*,
             CONCAT_WS('-', TIME_FORMAT(c.time_from, '%H:%i'), TIME_FORMAT(c.time_to, '%H:%i')) AS study_time,
             s.*,
-            (SELECT COUNT(courses_student_id) FROM courses_student WHERE course_id = c.course_id) AS student_count
+            (SELECT COUNT(courses_student_id) FROM courses_student WHERE course_id = c.course_id) AS student_count,
+            (SELECT COUNT(course_id) FROM sessions WHERE course_id = c.course_id) AS session_count
             from courses c        
             left join subjects s on c.subject_id = s.subject_id
             where 1 = 1 and c.active_status = 'Y'

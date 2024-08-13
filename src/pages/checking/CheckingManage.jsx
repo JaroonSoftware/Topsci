@@ -61,17 +61,22 @@ function CheckingManage() {
   };
 
   useEffect(() => {
-    GetItemsTeacher();
     const initial = async () => {
       if (config?.action === "check") {
         const res = await checkingservice
           .get(config?.code)
           .catch((error) => message.error("get Course data fail."));
         const {
-          data: { courses, student },
+          data: { courses, teacher, student },
         } = res.data;
         setFormDetail(courses);
-        setListStudent(student);
+        setListTeacher(teacher);
+        const studentWithAttendance = student.map((students) => ({
+          ...students,
+          attendance: true,
+          reason: null,
+        }));
+        setListStudent(studentWithAttendance);
         form.setFieldsValue({ ...courses });
         form.setFieldsValue({
           courses_time: [dayjs(courses.time_from, 'HH:mm'), dayjs(courses.time_to, 'HH:mm')],
@@ -82,38 +87,17 @@ function CheckingManage() {
     initial();
     return () => {};
   }, []);
-  const GetItemsTeacher = () => {
-    checkingservice.getTeacherbyCouse().then((res) => {
-      let { data } = res.data;
-      setOptionTeacher(data);
-    });
-  };
 
   const handleConfirm = () => {
     form
       .validateFields()
       .then((v) => {
-        
-        if (listStudent.length < 1){
-          message.error("กรุณาเพิ่ม รายชื่อนักเรียน");
-          return;
-        }
-        if (listTeacher.length < 1){
-          message.error("กรุณาเพิ่ม รายชื่อครู");
-          return;
-        }
-        debugger
-        if (v.courses_time && v.courses_time.length === 2) {
-          const timefrom = v.courses_time[0].format('HH:mm');
-          const timeto =v.courses_time[1].format('HH:mm');
-            v = { ...v, timefrom, timeto}   
-        }
         const courses = { ...formDetail, ...v }
-        const student = listStudent;
+        const student = {...listStudent};
 
         const parm = { courses, student  };
-        //console.log(parm);
-        const actions = config?.action !== "create" ? checkingservice.update : checkingservice.create;
+        console.log(parm);
+        const actions = checkingservice.checking;
         actions(parm)
           .then((r) => {
             handleClose().then((r) => {
@@ -124,12 +108,9 @@ function CheckingManage() {
             message.error("บันทึกข้อมูลไม่สำเร็จ.");
             console.warn(err);
           });
-      })
-      .catch((err) => {
-        Modal.error({
-          title: "This is an error message",
-          content: err,
-        });
+      }).catch((errorInfo) => {
+        console.log("Validate Failed:", errorInfo);
+        message.error("โปรดตรวจสอบข้อมูลในฟอร์มก่อนบันทึก");
       });
   };
 
@@ -161,17 +142,17 @@ function CheckingManage() {
     ) : null;
   };
   const handleSwitchChange = (checked, student) => {
-    const updatedStudents = listStudent.map(s => s.id === student.id ? { ...s, attendance: checked, reason: checked ? '' : s.reason } : s);
+    const updatedStudents = listStudent.map(s => s.student_code === student.student_code ? { ...s, attendance: checked, reason: checked ? '' : s.reason } : s);
     setListStudent(updatedStudents);
   };
   const handleReasonChange = (e, student) => {
-    const updatedStudents = listStudent.map(s => s.id === student.id ? { ...s, reason: e.target.value } : s);
+    const updatedStudents = listStudent.map(s => s.student_code === student.student_code ? { ...s, reason: e.target.value } : s);
     setListStudent(updatedStudents);
   };
 
   /** setting column table */
   //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
-  const columnstudent = studentColumn({ handleRemoveStudent });
+  const columnstudent = studentColumn( listStudent, handleReasonChange,handleSwitchChange );
 
   const SectionCourses = (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
@@ -186,10 +167,18 @@ function CheckingManage() {
       <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
           <Form.Item
               label="วิชาเรียน"
-              name="subjects"
+              name="subject_name"
           >
            <Input readOnly />
         </Form.Item>
+      </Col>
+      <Col xs={24} sm={24} md={24} lg={4} xl={4} xxl={6}>
+          <Form.Item
+            label="รอบเรียน"
+            name="session_no"
+          >
+            <Input readOnly />
+          </Form.Item>
       </Col>
       <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
         <Form.Item
@@ -202,50 +191,19 @@ function CheckingManage() {
             placeholder="เลือกครูผู้สอน"
             showSearch
             filterOption={filterOption}
-            options={optionTeacher}
+            options={listTeacher}
           ></Select>
         </Form.Item>
       </Col>
-      <Col xs={24} sm={24} md={24} lg={4} xl={4} xxl={4}>
-          <Form.Item
-            label="รอบเรียน"
-            name="number_of_sessions"
-          >
-            <Input readOnly />
-          </Form.Item>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={10} xl={4} xxl={4}>
+      <Col xs={24} sm={24} md={24} lg={10} xl={4} xxl={6}>
             <Form.Item 
               label='วันที่เรียน' 
-              name='courses_time'
+              name='session_date'
                rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
             >
-                <RangePicker 
-                  placeholder={['เวลาตั้งแต่', 'เวลาถึง']} 
-                  style={{width:'100%', height:40}}  
-                  picker="time"
-                  format="HH:mm"
-                  showTime={{
-                    format: 'HH:mm',
-                  }}
-                />
-            </Form.Item>
-      </Col>
-      <Col xs={24} sm={24} md={24} lg={10} xl={4} xxl={4}>
-            <Form.Item 
-              label='เวลาเรียน' 
-              name='courses_time'
-               rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
-            >
-                <RangePicker 
-                  placeholder={['เวลาตั้งแต่', 'เวลาถึง']} 
-                  style={{width:'100%', height:40}}  
-                  picker="time"
-                  format="HH:mm"
-                  showTime={{
-                    format: 'HH:mm',
-                  }}
-                  inputReadOnly
+                <DatePicker  
+                  placeholder="วันที่เรียน"
+                  style={{width:'100%', height:40}} 
                 />
             </Form.Item>
       </Col>

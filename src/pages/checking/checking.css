@@ -26,8 +26,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  border-color: #28a745;
-  color: #28a745;
 }
 
 .checking-button:hover {

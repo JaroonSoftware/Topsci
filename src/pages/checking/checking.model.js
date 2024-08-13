@@ -5,7 +5,7 @@ import "../../assets/styles/banks.css"
 import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
-import { DeleteOutlined, EditOutlined, PrinterOutlined, QuestionCircleOutlined } from "@ant-design/icons";
+import { FaListCheck } from "react-icons/fa6";
 import { BsCardChecklist } from "react-icons/bs";
 
 /** export component for edit table */
@@ -43,9 +43,14 @@ export const accessColumn = ({handleCheck}) => [
     key: "number_of_sessions", 
     align: "right",
     width: 80,
-    render: (text) => (
-      <Badge count={text} className="badge-success" />
-    ),
+    render: (text, record) => {
+      if (record.session_count === record.number_of_sessions) {
+        return <Badge count={record.session_count+'/'+record.number_of_sessions} className="badge-success" />;
+      }else{
+        return <Badge count={record.session_count+'/'+record.number_of_sessions} className="badge-warning" />;
+      }
+      return null; // หรือสามารถแสดงข้อความอื่น หรือเว้นว่างไว้
+    },
   },
   { 
     title: "จำนวนนักเรียน",
@@ -60,20 +65,23 @@ export const accessColumn = ({handleCheck}) => [
     fixed: 'right',
     align: "center",
     width: 100,
-    render: (text, record) => (
-      <Space>
-        <Button
-          icon={<BsCardChecklist />}
-          className="checking-button"
-          onClick={(e) => handleCheck(record)}
-          size="small"
-        />
-      </Space>
-    ),
+    render: (text, record) => {
+      if (record.session_count < record.number_of_sessions) {
+      return <Space>
+              <Button
+                type="primary" ghost
+                icon={<FaListCheck  />}
+                className="checking-button"
+                onClick={(e) => handleCheck(record)}
+                size="small"
+              />
+            </Space>
+      }
+    },
   }, 
 ];
 
-export const studentColumn = ({handleCheckChange, handleReasonChange}) => [
+export const studentColumn = (listStudent, handleReasonChange,handleSwitchChange ) => [
   {
     title: "ลำดับ",
     dataIndex: "ind",
@@ -106,7 +114,8 @@ export const studentColumn = ({handleCheckChange, handleReasonChange}) => [
     render: (text, student) => (
       <Switch 
         checked={student.attendance} 
-        onChange={(checked) => handleCheckChange(checked, student)} 
+        checkedChildren="มา" unCheckedChildren="ไม่มา"
+        onChange={(checked) => handleSwitchChange(checked, student)} 
       />
     ),
   },
@@ -116,14 +125,13 @@ export const studentColumn = ({handleCheckChange, handleReasonChange}) => [
     key: 'reason',
     render: (text, student) => (
       <Form.Item
-        name={`reason_${student.code}`}
+        name={`reason_${student.student_code}`}
         rules={[
           {
             required: !student.attendance,
             message: 'กรุณากรอกเหตุผลที่ไม่มาเรียน',
           },
         ]}
-        initialValue={student.reason}
       >
         <Input 
           value={student.reason} 
