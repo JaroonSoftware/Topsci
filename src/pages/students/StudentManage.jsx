@@ -16,7 +16,6 @@ import { SaveFilled } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router";
 import { delay } from "../../utils/util";
-// import OptionService from '../../service/Options.service';
 import Studentservice from "../../service/Student.Service";
 
 const studentservice = Studentservice();
@@ -84,6 +83,9 @@ const ItemsManage = () => {
           const data = err?.response?.data;
           message.error(data?.message || "บันทึกไม่สำเร็จ");
         });
+    }).catch((errorInfo) => {
+      console.log("Validate Failed:", errorInfo);
+      message.error("โปรดตรวจสอบข้อมูลในฟอร์มก่อนบันทึก");
     });
   };
 

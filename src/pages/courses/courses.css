@@ -1,5 +1,5 @@
 .courses-access .ant-table-tbody > tr > td, 
-.courses-access .ant-table-thead > tr > th {
+.courses-access .ant-table-thead > tr > th { 
     white-space: break-spaces;
     vertical-align: top;
 }
@@ -69,3 +69,8 @@ h4.ant-typography+.ant-form-item.\!m-0
 .courses-manage-form .ant-descriptions-item-label{
     min-width: 120px;
 }
+.custom-input-number {
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }

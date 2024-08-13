@@ -118,12 +118,7 @@ const TeacherAccess = () => {
       items={[
         {
           key: "1",
-          label: (
-            <>
-              <SearchOutlined />
-              ค้นหา
-            </>
-          ),
+          label: <><SearchOutlined /><span> <b>ค้นหา</b> </span></>,  
           children: (
             <>
               <Form form={form} layout="vertical" autoComplete="off">
@@ -226,9 +221,12 @@ const TeacherAccess = () => {
         size="middle"
         style={{ display: "flex", position: "relative" }}
       >
+        <Card className="card-search">
+        <Form form={form} layout="vertical" autoComplete="off" >
+            {FormSearch}
+        </Form> 
+        </Card>
         <Card>
-          {FormSearch}
-          <br></br>
           <Row gutter={[8, 8]} className="m-0">
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Table

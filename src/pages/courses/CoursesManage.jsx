@@ -30,7 +30,7 @@ import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
 
 import { RiDeleteBin5Line } from "react-icons/ri";
-import { LuPackageSearch } from "react-icons/lu";
+import { BiMessageSquareAdd } from "react-icons/bi";
 import { LuPrinter } from "react-icons/lu";
 const { confirm } = Modal;
 const opservice = OptionService();
@@ -177,12 +177,9 @@ function CoursesManage() {
             message.error("บันทึกข้อมูลไม่สำเร็จ.");
             console.warn(err);
           });
-      })
-      .catch((err) => {
-        Modal.error({
-          title: "This is an error message",
-          content: err,
-        });
+      }).catch((errorInfo) => {
+        console.log("Validate Failed:", errorInfo);
+        message.error("โปรดตรวจสอบข้อมูลในฟอร์มก่อนบันทึก");
       });
   };
 
@@ -272,7 +269,13 @@ function CoursesManage() {
             name="number_of_sessions"
             rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
-            <Input placeholder="กรอกจำนวนรอบเรียน" />
+            <InputNumber
+            min={1}
+            max={1000}
+            style={{width:'100%', height:40}}  
+            placeholder="กรอกจำนวนรอบเรียน"
+            className="custom-input-number"
+            />
           </Form.Item>
       </Col>
       <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
@@ -281,7 +284,13 @@ function CoursesManage() {
             name="price"
             rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
-            <Input placeholder="กรอกราคาคอร์ส" />
+            <InputNumber
+            min={1}
+            max={10000000}
+            style={{width:'100%', height:40}}  
+            placeholder="กรอกราคาคอร์ส"
+            className="custom-input-number"
+            />
           </Form.Item>
       </Col>
       <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
@@ -316,7 +325,7 @@ function CoursesManage() {
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex justify="end">
           <Button
-            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
+            icon={<BiMessageSquareAdd style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
               setOpenTeacher(true);
@@ -339,7 +348,6 @@ function CoursesManage() {
         {config?.action === "create" && (
           <Form.Item
           name="choose_course"
-          rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           style={{ margin: 0 }}
           >
             <Select
@@ -358,7 +366,7 @@ function CoursesManage() {
       <Col span={10} style={{ paddingInline: 0 }}>
         <Flex justify="end">
           <Button
-            icon={<LuPackageSearch style={{ fontSize: "1.2rem" }} />}
+            icon={<BiMessageSquareAdd style={{ fontSize: "1.2rem" }} />}
             className="bn-center justify-center bn-primary-outline"
             onClick={() => {
               setOpenStudent(true);
@@ -451,7 +459,6 @@ function CoursesManage() {
       <Col span={12} style={{ paddingInline: 0 }}>
         <Flex gap={4} justify="end">
           <Button
-            className="bn-center justify-center"
             icon={<SaveFilled style={{ fontSize: "1rem" }} />}
             type="primary"
             style={{ width: "9.5rem" }}
@@ -459,7 +466,7 @@ function CoursesManage() {
               handleConfirm();
             }}
           >
-            Save
+            บันทึก
           </Button>
         </Flex>
       </Col>

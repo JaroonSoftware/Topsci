@@ -65,7 +65,7 @@ const StudentAccess = () => {
       state: {
         config: {
           ...mngConfig,
-          title: "แก้ไขข้อมูลลูกค้า",
+          title: "แก้ไขข้อมูลนักเรียน",
           action: "edit",
           code: data?.student_code,
         },
@@ -74,10 +74,6 @@ const StudentAccess = () => {
     });
   };
 
-  const handleView = (data) => {
-    const newWindow = window.open("", "_blank");
-    newWindow.location.href = `/dln-print/${data.dncode}`;
-  };
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
 
@@ -113,20 +109,15 @@ const StudentAccess = () => {
   const FormSearch = (
     <Collapse
       size="small"
+      bordered = {true}
       onChange={(e) => {
         setActiveSearch(e);
       }}
-      bordered={false}
       activeKey={activeSearch}
       items={[
         {
           key: "1",
-          label: (
-            <>
-              <SearchOutlined />
-              ค้นหา
-            </>
-          ),
+          label: <><SearchOutlined /><span> <b>ค้นหา</b> </span></>,  
           children: (
             <>
               <Form form={form} layout="vertical" autoComplete="off">
@@ -299,7 +290,7 @@ const StudentAccess = () => {
       ]}
     />
   );
-  const column = accessColumn({ handleEdit, handleDelete, handleView });
+  const column = accessColumn({ handleEdit, handleDelete });
 
   const TitleTable = (
     <Flex className="width-100" align="center">
@@ -333,9 +324,12 @@ const StudentAccess = () => {
         size="middle"
         style={{ display: "flex", position: "relative" }}
       >
+        <Card className="card-search">
+        <Form form={form} layout="vertical" autoComplete="off" >
+            {FormSearch}
+        </Form> 
+        </Card>
         <Card>
-          {FormSearch}
-          <br></br>
           <Row gutter={[8, 8]} className="m-0">
             <Col xs={24} sm={24} md={24} lg={24} xl={24}>
               <Table

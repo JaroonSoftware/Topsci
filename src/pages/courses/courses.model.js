@@ -20,7 +20,7 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     title: "ชื่อคอร์ส",
     key: "course_name",
     dataIndex: "course_name",
-    align: "left",
+    align: "left", 
     sorter: (a, b) => (a.course_name).localeCompare(b.course_name),
     width:140,
   },

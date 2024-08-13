@@ -20,7 +20,7 @@ let _nav = [
   {
     title: "การเข้าเรียน",
     icon: <VscRepoClone className="nav-ico" />,
-    to: "/quotation",
+    to: "/checking",
   },
   {
     title: "DATA",

@@ -1,0 +1,47 @@
+
+@media screen and (max-width: 768px) {
+  .checking-manage .ant-drawer-content-wrapper {
+     width: 100vw !important; /* Adjust the width for smaller screens */
+   } 
+}
+
+@media screen and (min-width: 768px) {
+  .checking-manage .ant-drawer-content-wrapper {
+      width: 40vw !important; /* Set a fixed width for larger screens */
+    } 
+}
+
+
+.checking-manage-form .ant-descriptions-item-label{
+    min-width: 120px;
+}
+.custom-input-number {
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+.checking-button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.checking-button:hover {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-success .ant-badge-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #52c41a;
+}
+.badge-warning .ant-badge-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #faad14;
+}
