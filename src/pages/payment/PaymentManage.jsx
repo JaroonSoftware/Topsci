@@ -16,6 +16,7 @@ import {
 } from "antd";
 import dayjs from 'dayjs';
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
+import PaymentFormModal from "../../components/modal/payment/PaymentFormModal";
 
 import OptionService from "../../service/Options.service";
 import PaymentService from "../../service/Payment.service";
@@ -43,7 +44,7 @@ function PaymentManage() {
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
   const { RangePicker } = DatePicker;
-  const [optionTeacher, setOptionTeacher] = useState([]);
+  const [openPayment , setOpenPayment] = useState(false);
 
   /** Detail Data State */
   const [listStudent, setListStudent] = useState([]);
@@ -149,10 +150,19 @@ function PaymentManage() {
     const updatedStudents = listStudent.map(s => s.student_code === student.student_code ? { ...s, reason: e.target.value } : s);
     setListStudent(updatedStudents);
   };
+  const handleAddPayment = (values) => {
+    console.log('ข้อมูลการชำระเงิน:', values);
+    // คุณสามารถส่งข้อมูลไปยัง backend หรือนำไปใช้งานต่อที่นี่
+  };
+  const handleDetailPayment = () => {
+    console.log('test')
+    setOpenPayment(true);
+    console.log(openPayment);
+  };
 
   /** setting column table */
   //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
-  const columnstudent = studentColumn( listStudent, handleReasonChange,handleSwitchChange );
+  const columnstudent = studentColumn( listStudent, handleDetailPayment, handleAddPayment );
 
   const SectionCourses = (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
@@ -284,6 +294,13 @@ function PaymentManage() {
           </Form>
           {SectionBottom}
         </Space>
+        {openPayment && (
+        <PaymentFormModal
+          show={openPayment}
+          close={() => setOpenPayment(false)}
+          onSubmit={handleAddPayment}
+        ></PaymentFormModal>
+      )}
       </div>
     </div>
   );

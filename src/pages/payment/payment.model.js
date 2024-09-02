@@ -3,7 +3,7 @@ import "../../assets/styles/banks.css";
 import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
-import { FaListCheck } from "react-icons/fa6";
+import { DollarOutlined, FileSearchOutlined } from '@ant-design/icons';
 
 /** export component for edit table */
 export const componentsEditable = {
@@ -56,6 +56,7 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     title: "ลำดับ",
     dataIndex: "ind",
     key: "ind",
+    align: "center",
     width: 80, 
     render: (im, rc, index) => <>{index + 1}</>,
   },
@@ -81,7 +82,8 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     title: "สถานะการชำระเงิน",
     dataIndex: "check_checking",
     key: "check_checking", 
-    align: "left",
+    align: "center",
+    width: 200,
     render: (text, record) => {
       if (record.check_checking === "N") {
         return "รอการชำระเงิน"
@@ -100,38 +102,43 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     key: "operation", 
     fixed: 'right',
     align: "center",
-    width: 100,
+    width: 120,
     render: (text, record) => {
-      if (record.session_count < record.number_of_sessions) {
+      if (record.last_sessions < record.number_of_sessions) {
         return (
-          <span>
+          <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
               <Button
                 type="primary" ghost
-                icon={<FaListCheck  />}
+                icon={<FileSearchOutlined  />}
                 className="checking-button"
-                onClick={(e) => handleDetailPayment(record)}
+                onClick={(e) => handleDetailPayment()}
                 size="small"
               />
-            {' '}
-            <Button
-                type="primary" ghost
-                icon={<FaListCheck  />}
-                className="checking-button"
-                onClick={(e) => handleAddPayment(record)}
-                size="small"
-              />
+            </Tooltip>
+            <Tooltip placement="topLeft" title={'ชำระเงิน'}>
+              <Button
+                  type="primary" ghost
+                  icon={<DollarOutlined  />}
+                  className="checking-button"
+                  onClick={(e) => handleAddPayment(record)}
+                  size="small"
+                />
+            </Tooltip>
           </span>
         )
       }else{
         return (
           <span>
+            <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
               <Button
                 type="primary" ghost
-                icon={<FaListCheck  />}
+                icon={<FileSearchOutlined  />}
                 className="checking-button"
                 onClick={(e) => handleDetailPayment(record)}
                 size="small"
               />
+            </Tooltip>
             {' '}
           </span>
         )
