@@ -13,16 +13,17 @@ import {
   Select,
   Badge,
   Switch,
+  Spin,
 } from "antd";
 import dayjs from 'dayjs';
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
-import PaymentFormModal from "../../components/modal/payment/PaymentFormModal";
 
 import OptionService from "../../service/Options.service";
 import PaymentService from "../../service/Payment.service";
 import { SaveFilled } from "@ant-design/icons";
 import {
   studentColumn,
+  listPaymentDetailColumn,
 } from "./payment.model";
 
 import { delay } from "../../utils/util";
@@ -43,15 +44,21 @@ function PaymentManage() {
 
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
-  const { RangePicker } = DatePicker;
-  const [openPayment , setOpenPayment] = useState(false);
+  const [formListPaymeny] = Form.useForm();
+  const [formAddPaymeny] = Form.useForm();
+  const [openModalListPayment , setOpenModalListPaymen] = useState(false);
+  const [openModalAddPayment , setOpenModalAddPaymen] = useState(false);
+  const [loading,  setLoading] = useState(true);
+  
 
   /** Detail Data State */
   const [listStudent, setListStudent] = useState([]);
-
-  const [listTeacher, setListTeacher] = useState([]);
  
   const [formDetail, setFormDetail] = useState([]);
+  const [selectedStudent, setSelectedStudent] = useState(null);
+  const [selectedCouses, setSelectedCouses] = useState(null);
+  const [itemsData, setItemsData] = useState([]);
+  const [listDataPayment, setListDataPayment] = useState([]);
 
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
@@ -68,10 +75,9 @@ function PaymentManage() {
           .get(config?.code)
           .catch((error) => message.error("get Course data fail."));
         const {
-          data: { courses, teacher, student },
+          data: { courses, student },
         } = res.data;
         setFormDetail(courses);
-        setListTeacher(teacher);
         const studentWithAttendance = student.map((students) => ({
           ...students,
           attendance: true,
@@ -89,12 +95,17 @@ function PaymentManage() {
     return () => {};
   }, []);
 
-  const handleConfirm = () => {
-    form
+  const handleConfirmAddPayment = () => {
+    formAddPaymeny
       .validateFields()
       .then((v) => {
-        const courses = { ...formDetail, ...v }
-        const student = {...listStudent};
+        const payment = { 
+          ...formAddPayment, 
+          ...v, 
+          : 'someValue',  // เพิ่ม property ใหม่
+          paymentDate: new Date()    // เพิ่ม property และค่าที่ได้จากฟังก์ชัน
+        };
+        
 
         const parm = { courses, student  };
         console.log(parm);
@@ -121,49 +132,44 @@ function PaymentManage() {
     console.clear();
   };
 
-  const handleDeleteStudent = (code) => {
-    const itemDetail = [...listStudent];
-    const newData = itemDetail.filter((item) => item?.student_code !== code);
-    setListStudent([...newData]);
-  };
+  const handleAddPayment = (student_code) => {
+    setLoading(true);
+    let student = listStudent.find(data => data.student_code === student_code);
+    setSelectedStudent(student.student_code);
+    setSelectedCouses(formDetail.course_id);
+    const dataAddPayment = {
+      student_name: student.student_name,
+      courses_name: formDetail.course_name,
+      subjects: formDetail.subject_name
+    }
+    formAddPaymeny.setFieldsValue({ ...dataAddPayment });
+    setLoading(false);
+    setOpenModalAddPaymen(true);
 
-  const handleRemoveStudent = (record) => {
-    const itemDetail = [...listStudent];
-    return itemDetail.length >= 1 ? (
-      <Button
-        className="bt-icon"
-        size="small"
-        danger
-        icon={
-          <RiDeleteBin5Line style={{ fontSize: "1rem", marginTop: "3px" }} />
+  };
+  const handleDetailPayment = (student_code) => {
+    setLoading(true);
+    paymentservice.getListPaymentDetail({ student: student_code, couses: formDetail.course_id }).then((res) => { 
+        let { status, data } = res;
+        if (status === 200) {
+            setItemsData(data.data);
+            setListDataPayment(data.data);
+            formListPaymeny.setFieldsValue({ ...data.data });
         }
-        onClick={() => handleDeleteStudent(record?.student_code)}
-        disabled={!record?.student_code}
-      />
-    ) : null;
-  };
-  const handleSwitchChange = (checked, student) => {
-    const updatedStudents = listStudent.map(s => s.student_code === student.student_code ? { ...s, attendance: checked, reason: checked ? '' : s.reason } : s);
-    setListStudent(updatedStudents);
-  };
-  const handleReasonChange = (e, student) => {
-    const updatedStudents = listStudent.map(s => s.student_code === student.student_code ? { ...s, reason: e.target.value } : s);
-    setListStudent(updatedStudents);
-  };
-  const handleAddPayment = (values) => {
-    console.log('ข้อมูลการชำระเงิน:', values);
-    // คุณสามารถส่งข้อมูลไปยัง backend หรือนำไปใช้งานต่อที่นี่
-  };
-  const handleDetailPayment = () => {
-    console.log('test')
-    setOpenPayment(true);
-    console.log(openPayment);
+    })
+    .catch((err) => { 
+        message.error("Request error!");
+    })
+    .finally( () => setTimeout( () => { 
+      setLoading(false);
+      setOpenModalListPaymen(true); 
+    }, 400));
   };
 
   /** setting column table */
   //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
   const columnstudent = studentColumn( listStudent, handleDetailPayment, handleAddPayment );
-
+  const columnlistpayment = listPaymentDetailColumn( );
   const SectionCourses = (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
       <Col xs={24} sm={24} md={24} lg={12} xl={16} xxl={16}>
@@ -184,7 +190,6 @@ function PaymentManage() {
       </Col>
     </Row>
   );
-
 
   const TitleTableStudent = (
     <Flex className="width-100" align="center">
@@ -217,7 +222,6 @@ function PaymentManage() {
     </>
   );
 
-
   ///** button */
 
   const SectionTop = (
@@ -244,22 +248,31 @@ function PaymentManage() {
         </Flex>
       </Col>
       <Col span={12} style={{ paddingInline: 0 }}>
-        <Flex gap={4} justify="end">
-          <Button
-            className="bn-center justify-center"
-            icon={<SaveFilled style={{ fontSize: "1rem" }} />}
-            type="primary"
-            style={{ width: "9.5rem" }}
-            onClick={() => {
-              handleConfirm();
-            }}
-          >
-            Save
-          </Button>
-        </Flex>
       </Col>
     </Row>
   );
+
+  const ButtonModalListPayment = (
+    <Space direction="horizontal" size="middle" >
+        <Button onClick={() => handleCloseModalListPayment() }>ปิด</Button>
+    </Space>
+  )
+  const ButtonModalAddPayment = (
+    <Space direction="horizontal" size="middle" >
+        <Button onClick={() => handleCloseModalAddPayment() }>ปิด</Button>
+        <Button type='primary' onClick={() => handleConfirmAddPayment() }>บันทึกข้อมูล</Button>
+    </Space>
+  )
+  const handleCloseModalListPayment = () => {
+    setSelectedCouses(null);
+    setSelectedStudent(null);
+    formAddPaymeny.resetFields();
+    setOpenModalListPaymen(false);
+  };
+  
+  const handleCloseModalAddPayment = () => {
+    setOpenModalAddPaymen(false);
+  };
 
   return (
     <div className="courses-manage">
@@ -294,15 +307,141 @@ function PaymentManage() {
           </Form>
           {SectionBottom}
         </Space>
-        {openPayment && (
-        <PaymentFormModal
-          show={openPayment}
-          close={() => setOpenPayment(false)}
-          onSubmit={handleAddPayment}
-        ></PaymentFormModal>
+        {openModalListPayment && (
+        <Modal
+            open={openModalListPayment}
+            title="ประวัติการชำระเงิน"
+            onCancel={() => handleCloseModalListPayment() } 
+            footer={ButtonModalListPayment}
+            maskClosable={false}
+            style={{ top: 20 }}
+            width={800}
+            className='sample-request-modal-items'
+        >
+            <Spin spinning={loading}>
+                <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative'}}  >
+                    <Card style={{backgroundColor:'#f0f0f0' }}>
+                        <Form form={formListPaymeny} layout="vertical" autoComplete="off" >
+                            <Row gutter={[{xs:32, sm:32, md:32, lg:12, xl:12}, 8]} className='m-0'>
+                              <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                                  <Form.Item
+                                      label="ชื่อนักเรียน"
+                                      name="student_name"
+                                  >
+                                  <Input disabled />
+                                </Form.Item>
+                              </Col>
+                            </Row> 
+                        </Form>
+                    </Card>
+                        <Table  
+                            bordered
+                            dataSource={listDataPayment}
+                            columns={columnlistpayment} 
+                            pagination={{ 
+                                total:listDataPayment.length, 
+                                showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} items`,
+                                defaultPageSize:10,
+                                pageSizeOptions:[10,25,35,50,100]
+                            }}
+                            scroll={{ x: 'max-content' }} size='small'
+                        /> 
+                </Space>                
+            </Spin> 
+        </Modal>    
+      )}
+      {openModalAddPayment && (
+        <Modal
+            open={openModalAddPayment}
+            title="เพิ่มการชำระเงิน"
+            onCancel={() => handleCloseModalAddPayment() } 
+            footer={ButtonModalAddPayment}
+            maskClosable={false}
+            style={{ top: 20 }}
+            width={800}
+            className='sample-request-modal-items'
+        >
+            <Spin spinning={loading}>
+                <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative'}}  >
+                    <Card style={{backgroundColor:'#f0f0f0' }}>
+                        <Form form={formAddPaymeny} layout="vertical" autoComplete="off" >
+                            <Row gutter={[{xs:32, sm:32, md:32, lg:12, xl:12}, 8]} className='m-0'>
+                                <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
+                                    <Form.Item
+                                        label="ชื่อนักเรียน"
+                                        name="student_name"
+                                    >
+                                    <Input disabled />
+                                  </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={24} lg={12} xl={12} xxl={12}>
+                                    <Form.Item
+                                        label="คอร์ส"
+                                        name="courses_name"
+                                    >
+                                    <Input disabled />
+                                  </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={24} lg={12} xl={12} xxl={12}>
+                                    <Form.Item
+                                        label="วิชา"
+                                        name="subjects"
+                                    >
+                                    <Input disabled />
+                                  </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={24} lg={8} xl={8} xxl={8}>
+                                    <Form.Item
+                                        label="วันที่ชำระเงิน"
+                                        name="payment_date"
+                                        rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+                                    >
+                                    <DatePicker
+                                     style={{width:'100%', height:40}}  
+                                     />
+                                  </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={24} lg={8} xl={8} xxl={8}>
+                                    <Form.Item
+                                        label="จำนวนเงินที่ชำระ"
+                                        name="amount_paid"
+                                        rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+                                    >
+                                    <InputNumber
+                                      min={1}
+                                      max={9999999}
+                                      style={{width:'100%', height:40}}
+                                      className="custom-input-number"
+                                      />
+                                  </Form.Item>
+                                </Col>
+                                <Col xs={24} sm={24} md={24} lg={8} xl={8} xxl={8}>
+                                    <Form.Item
+                                        label="ช่องทางการชำระเงิน"
+                                        name="payment_method"
+                                        rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+                                    >
+                                    <Select
+                                      style={{width:'100%', height:40}}
+                                      options={[
+                                        { value: 'เงินสด', label: 'เงินสด' },
+                                        { value: 'โอนผ่านบัญชีธนาคาร', label: 'โอนผ่านบัญชีธนาคาร' },
+                                      ]}
+                                    />
+                                  </Form.Item>
+                                </Col>
+                            </Row> 
+                        </Form>
+                    </Card>
+                </Space>                
+            </Spin> 
+        </Modal>    
       )}
       </div>
     </div>
+    //Modal ListPaymentDetail
+
+    //
   );
 }
 

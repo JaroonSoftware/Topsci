@@ -112,7 +112,7 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                 type="primary" ghost
                 icon={<FileSearchOutlined  />}
                 className="checking-button"
-                onClick={(e) => handleDetailPayment()}
+                onClick={(e) => handleDetailPayment(record.student_code)}
                 size="small"
               />
             </Tooltip>
@@ -121,7 +121,7 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                   type="primary" ghost
                   icon={<DollarOutlined  />}
                   className="checking-button"
-                  onClick={(e) => handleAddPayment(record)}
+                  onClick={(e) => handleAddPayment(record.student_code)}
                   size="small"
                 />
             </Tooltip>
@@ -135,7 +135,7 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                 type="primary" ghost
                 icon={<FileSearchOutlined  />}
                 className="checking-button"
-                onClick={(e) => handleDetailPayment(record)}
+                onClick={(e) => handleDetailPayment(record.student_code)}
                 size="small"
               />
             </Tooltip>
@@ -145,4 +145,21 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
       }
     },
   }, 
+];
+export const listPaymentDetailColumn = () => [
+  {
+      title: "วันที่ชำระเงิน",
+      key: "payment_date",
+      dataIndex: "payment_date", 
+    },
+    {
+      title: "จำนวนเงิน",
+      dataIndex: "amount_paid",
+      key: "amount_paid",
+    },
+    {
+      title: "วิธีการชำระเงิน",
+      dataIndex: "payment_method",
+      key: "payment_method",
+    },
 ];

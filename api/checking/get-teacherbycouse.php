@@ -4,7 +4,7 @@ include_once(dirname(__FILE__, 2)."/onload.php");
 include_once(dirname(__FILE__, 2)."/common/fnc-code.php");
 $db = new DbConnect;
 $conn = $db->connect(); 
-
+ 
 if ($_SERVER["REQUEST_METHOD"] == "GET"){
     extract($_GET, EXTR_OVERWRITE, "_"); 
    
