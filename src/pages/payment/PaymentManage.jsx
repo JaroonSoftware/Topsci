@@ -100,21 +100,18 @@ function PaymentManage() {
       .validateFields()
       .then((v) => {
         const payment = { 
-          ...formAddPayment, 
           ...v, 
-          : 'someValue',  // เพิ่ม property ใหม่
-          paymentDate: new Date()    // เพิ่ม property และค่าที่ได้จากฟังก์ชัน
+          student_code : selectedStudent,  
+          course : selectedCouses   
         };
-        
 
-        const parm = { courses, student  };
-        console.log(parm);
-        const actions = paymentservice.payment;
+        const parm = { payment };
+        //console.log(parm);
+        const actions = paymentservice.addPayment;
         actions(parm)
           .then((r) => {
-            handleClose().then((r) => {
-              message.success("บันทึกข้อมูลสำเร็จ.");
-            });
+            handleCloseModalAddPayment();
+            message.success("บันทึกข้อมูลสำเร็จ.");
           })
           .catch((err) => {
             message.error("บันทึกข้อมูลไม่สำเร็จ.");
@@ -148,22 +145,28 @@ function PaymentManage() {
 
   };
   const handleDetailPayment = (student_code) => {
-    setLoading(true);
-    paymentservice.getListPaymentDetail({ student: student_code, couses: formDetail.course_id }).then((res) => { 
-        let { status, data } = res;
+    setLoading(true); // เริ่มการแสดงสถานะ loading
+    let student = listStudent.find(data => data.student_code === student_code);
+    paymentservice.getListPaymentDetail({ student: student_code, couses: formDetail.course_id })
+      .then((res) => {
+        const { status, data } = res;
         if (status === 200) {
-            setItemsData(data.data);
-            setListDataPayment(data.data);
-            formListPaymeny.setFieldsValue({ ...data.data });
+          setItemsData(data.data); // ตั้งค่า items
+          setListDataPayment(data.data); // ตั้งค่ารายการการชำระเงิน
+          formListPaymeny.setFieldsValue({ student_name: student.student_name });
+          debugger
         }
-    })
-    .catch((err) => { 
-        message.error("Request error!");
-    })
-    .finally( () => setTimeout( () => { 
-      setLoading(false);
-      setOpenModalListPaymen(true); 
-    }, 400));
+      })
+      .catch((err) => {
+        message.error("Request error!"); // แสดงข้อความ error หากเกิดปัญหา
+      })
+      .finally(() => {
+        // ใช้ setTimeout เพื่อ delay ก่อนเปลี่ยนสถานะ loading และเปิด modal
+        setTimeout(() => {
+          setLoading(false); // ปิดการแสดง loading
+          setOpenModalListPaymen(true); // เปิด modal
+        }, 400); // 400ms delay
+      });
   };
 
   /** setting column table */
@@ -264,13 +267,14 @@ function PaymentManage() {
     </Space>
   )
   const handleCloseModalListPayment = () => {
-    setSelectedCouses(null);
-    setSelectedStudent(null);
-    formAddPaymeny.resetFields();
+    formListPaymeny.resetFields();
     setOpenModalListPaymen(false);
   };
   
   const handleCloseModalAddPayment = () => {
+    setSelectedCouses(null);
+    setSelectedStudent(null);
+    formAddPaymeny.resetFields();
     setOpenModalAddPaymen(false);
   };
 
@@ -328,7 +332,7 @@ function PaymentManage() {
                                       label="ชื่อนักเรียน"
                                       name="student_name"
                                   >
-                                  <Input disabled />
+                                  <Input disabled/>
                                 </Form.Item>
                               </Col>
                             </Row> 
@@ -439,9 +443,6 @@ function PaymentManage() {
       )}
       </div>
     </div>
-    //Modal ListPaymentDetail
-
-    //
   );
 }
 
