@@ -20,7 +20,6 @@ import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
 import OptionService from "../../service/Options.service";
 import PaymentService from "../../service/Payment.service";
-import { SaveFilled } from "@ant-design/icons";
 import {
   studentColumn,
   listPaymentDetailColumn,
@@ -29,11 +28,6 @@ import {
 import { delay } from "../../utils/util";
 import { ButtonBack } from "../../components/button";
 import { useLocation, useNavigate } from "react-router-dom";
-
-import { RiDeleteBin5Line } from "react-icons/ri";
-import { BiMessageSquareAdd } from "react-icons/bi";
-const { confirm } = Modal;
-const opservice = OptionService();
 const paymentservice = PaymentService();
 
 const gotoFrom = "/payment";
@@ -71,7 +65,16 @@ function PaymentManage() {
   useEffect(() => {
     const initial = async () => {
       if (config?.action === "detail") {
-        const res = await paymentservice
+        await Search();
+      }
+    };
+
+    initial();
+    return () => {};
+  }, []);
+
+  const Search = async () => {
+    const res = await paymentservice
           .get(config?.code)
           .catch((error) => message.error("get Course data fail."));
         const {
@@ -88,12 +91,7 @@ function PaymentManage() {
         form.setFieldsValue({
           courses_time: [dayjs(courses.time_from, 'HH:mm'), dayjs(courses.time_to, 'HH:mm')],
         });
-      }
-    };
-
-    initial();
-    return () => {};
-  }, []);
+  }
 
   const handleConfirmAddPayment = () => {
     formAddPaymeny
@@ -112,6 +110,7 @@ function PaymentManage() {
           .then((r) => {
             handleCloseModalAddPayment();
             message.success("บันทึกข้อมูลสำเร็จ.");
+            Search();
           })
           .catch((err) => {
             message.error("บันทึกข้อมูลไม่สำเร็จ.");
@@ -172,7 +171,7 @@ function PaymentManage() {
   /** setting column table */
   //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
   const columnstudent = studentColumn( listStudent, handleDetailPayment, handleAddPayment );
-  const columnlistpayment = listPaymentDetailColumn( );
+  const columnlistpayment = listPaymentDetailColumn();
   const SectionCourses = (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
       <Col xs={24} sm={24} md={24} lg={12} xl={16} xxl={16}>

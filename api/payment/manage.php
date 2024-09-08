@@ -27,37 +27,17 @@ try {
         $stmt->bindParam(":student_code", $payment->student_code, PDO::PARAM_INT);
         $stmt->bindParam(":amount_paid", $payment->amount_paid, PDO::PARAM_INT);
         $stmt->bindParam(":payment_date", $payment_date->format('Y-m-d'), PDO::PARAM_STR);
-        $stmt->bindParam(":payment_method", $payment_method, PDO::PARAM_INT);
+        $stmt->bindParam(":payment_method", $payment->payment_method, PDO::PARAM_STR);
 
         if(!$stmt->execute()) {
             $error = $conn->errorInfo();
             throw new PDOException("Insert Payment data error => $error");
             die;
         }
-        $sessionId = $conn->lastInsertId();
-        
-        // insert attendance
-        $sql = "insert into attendance (session_id,student_code,status,remarks)
-        values (:session_id,:student_code,:status,:remarks)";
-        $stmt = $conn->prepare($sql);
-        if(!$stmt) throw new PDOException("Insert attendance prepare data error => {$conn->errorInfo()}");
 
-        foreach( $student as $ind => $val){
-            $val = (object)$val;
-            $stmt->bindParam(":session_id", $sessionId, PDO::PARAM_INT);
-            $stmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
-            $attendance = $val->attendance ? 'Y' : 'N';
-            $stmt->bindParam(":status", ($attendance) , PDO::PARAM_STR);
-            $stmt->bindParam(":remarks", ($val->reason) , PDO::PARAM_STR);
-            
-            if(!$stmt->execute()) {
-                $error = $conn->errorInfo();
-                throw new PDOException("Insert attendance error => $error"); 
-            }
-        }
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data"=> array("course" => $courses->course_name)));
+        echo json_encode(array("data"=> array("payment" => $payment->payment_date)));
 
     } else  if($_SERVER["REQUEST_METHOD"] == "PUT"){
         

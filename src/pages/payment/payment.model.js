@@ -79,6 +79,21 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     align: "left",
   },
   {
+    title: "ยอดค้างชำระ",
+    dataIndex: "overdue_balance",
+    key: "overdue_balance", 
+    align: "center",
+    render: (text, record) => {
+      if (record.check_checking === "N") {
+        return "0"
+      }else if ((parseFloat(record.price) * parseFloat(record.last_sessions) - parseFloat(record.total_payment)) < 0) {
+        return "0";
+      } else {
+        return (parseFloat(record.price) * parseFloat(record.last_sessions) - parseFloat(record.total_payment));
+      }
+    },
+  },
+  {
     title: "สถานะการชำระเงิน",
     dataIndex: "check_checking",
     key: "check_checking", 
@@ -87,12 +102,12 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     render: (text, record) => {
       if (record.check_checking === "N") {
         return "รอการชำระเงิน"
-      }else if ((record.price * record.last_sessions) === record.total_payment) {
-        return "ชำระเงินครบ"
-      }else if (record.total_payment < (record.price * record.last_sessions)) {
-        return "ค้างชำระเงิน"
-      }else if (record.total_payment > (record.price * record.last_sessions)) {
-        return "ชำระเงินเกิน"
+      }else if (parseFloat(record.price) * parseFloat(record.last_sessions) === parseFloat(record.total_payment)) {
+        return "ชำระเงินครบ";
+      } else if (parseFloat(record.total_payment) < parseFloat(record.price) * parseFloat(record.last_sessions)) {
+        return "ค้างชำระเงิน";
+      } else if (parseFloat(record.total_payment) > parseFloat(record.price) * parseFloat(record.last_sessions)) {
+        return "ชำระเงินเกิน";
       }
       return null; // หรือสามารถแสดงข้อความอื่น หรือเว้นว่างไว้
     },
@@ -147,10 +162,15 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
   }, 
 ];
 export const listPaymentDetailColumn = () => [
-  {
+    {
       title: "วันที่ชำระเงิน",
       key: "payment_date",
-      dataIndex: "payment_date", 
+      dataIndex: "payment_date",
+      render: (text) => {
+        const date = new Date(text);
+        const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
+        return formattedDate;
+      }, 
     },
     {
       title: "จำนวนเงิน",
