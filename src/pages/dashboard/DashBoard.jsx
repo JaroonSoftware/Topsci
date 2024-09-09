@@ -20,16 +20,16 @@ const dataMenuDashBoard = [
 const pagging = { pagination: { current: 1, pageSize: 10, }, };
 const dsbservice = DashBoardService();
 function DashBoard() {
-
-    const hendelOpenMenu = (menu)=>{ 
-      console.log(menu)
+    const [selectedMenu, setSelectedMenu] = useState(null);
+    const hendelOpenMenu = (value)=>{ 
+      console.log(value)
+      setSelectedMenu(value);
     }
-    const ListMenu = ()=>{ 
-        return (
+    const ListMenu = (
         <> 
             <List
             size="large"
-            header={<div>ข้อมูลต่างๆ</div>}
+            header={<div style={{ fontSize: '20px', fontWeight: 'bold' }}>ข้อมูลต่างๆ</div>}
             bordered
             dataSource={dataMenuDashBoard}
             renderItem={(item, index) => 
@@ -41,30 +41,20 @@ function DashBoard() {
             }
             />
         </>
-        )
-    }
+        );
 
     return (
         <>
         <div className='layout-content px-3 sm:px-5 md:px-5'>
-            <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative', paddingInline:"1.34rem" }} className='dashboard' id='dashboard' >
-              <List
-                size="large"
-                header={<div>ข้อมูลต่างๆ</div>}
-                bordered
-                dataSource={dataMenuDashBoard}
-                renderItem={(item, index) => 
-                  <List.Item>
-                  <List.Item.Meta
-                    title={<a onClick={hendelOpenMenu(item.value)}>{item.title}</a>}
-                  />
-              </List.Item>
-              }
-              />
-            </Space> 
+
         </div>
             <div className='drawer-dashboard'> 
-            {ListMenu}
+            {!selectedMenu && ListMenu} 
+            {selectedMenu && (
+              <div style={{ paddingTop: '20px' }}>
+                {selectedMenu} {/* เปลี่ยนเป็น dataTable ที่คุณต้องการ */}
+              </div>
+            )}
             </div> 
         </>
 
