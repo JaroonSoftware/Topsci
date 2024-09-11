@@ -21,10 +21,23 @@ const pagging = { pagination: { current: 1, pageSize: 10, }, };
 const dsbservice = DashBoardService();
 function DashBoard() {
     const [selectedMenu, setSelectedMenu] = useState(null);
-    const hendelOpenMenu = (value)=>{ 
+    
+    const hendelOpenMenu = async (value)=>{ 
       console.log(value)
+      try {
+        // เรียกข้อมูลจาก backend
+      const res = await dsbservice.getReport({ menu: value }).catch((error) => message.error("get report data fail."));
+      const { data } = res.data; 
+      setListStudent(null);
+      setListStudent(data);
+      message.success('ดึงข้อมูลสำเร็จ');
+      } catch (error) {
+        console.error('Error fetching data:', error);
+        message.error('มีบางอย่างผิดพลาด กรุณาลองใหม่อีกครั้ง');
+      }
       setSelectedMenu(value);
     }
+
     const ListMenu = (
         <> 
             <List
@@ -35,7 +48,7 @@ function DashBoard() {
             renderItem={(item, index) => 
               <List.Item>
               <List.Item.Meta
-                title={<a onClick={hendelOpenMenu(item.value)}>{item.title}</a>}
+                title={<a onClick={() => hendelOpenMenu(item.value)}>{item.title}</a>}
               />
             </List.Item>
             }
@@ -51,8 +64,8 @@ function DashBoard() {
             <div className='drawer-dashboard'> 
             {!selectedMenu && ListMenu} 
             {selectedMenu && (
-              <div style={{ paddingTop: '20px' }}>
-                {selectedMenu} {/* เปลี่ยนเป็น dataTable ที่คุณต้องการ */}
+              <div style={{ marginTop: '50px' }}>
+                {selectedMenu} 
               </div>
             )}
             </div> 
