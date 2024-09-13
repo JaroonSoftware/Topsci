@@ -9,20 +9,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     extract($_GET, EXTR_OVERWRITE, "_"); 
    
     try {  
-        $sql = "select s.student_code,CONCAT_WS(' ',s.firstname,s.lastname) as student_name,s.degree,s.school ";
-        $sql .= " from courses_student cs left join student s on cs.student_code = s.student_code";        
-        $sql .= " where cs.course_id  = :code";
-        
+        $student = null;
+        $sql = "SELECT course_id as value,course_name as label FROM courses where active_status = 'Y'";
         $stmt = $conn->prepare($sql); 
-        if (!$stmt->execute(['code' => $code ])){
-            $error = $conn->errorInfo(); 
-            http_response_code(404);
-            throw new PDOException("Geting data error => $error");
-        }
-        $student = $stmt->fetchAll(PDO::FETCH_ASSOC);
+        $stmt->execute();
+        $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
         http_response_code(200);
-        echo json_encode(array("data"=>$student));
+        echo json_encode(array('status' => 1, 'data' => array( "courses" => $courses, "student" => $student )));
     } catch (mysqli_sql_exception $e) { 
         http_response_code(400);
         echo json_encode(array('status' => '0', 'message' => $e->getMessage()));

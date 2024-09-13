@@ -207,7 +207,7 @@ const SubjectsAccess = () => {
     </Flex>
   );
   return (
-    <div className="item-access">
+    <div className="">
       <Space
         direction="vertical"
         size="middle"
