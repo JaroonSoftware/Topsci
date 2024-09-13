@@ -9,6 +9,7 @@ import dayjs from 'dayjs';
 import 'dayjs/locale/th';
 import buddhistEra from 'dayjs/plugin/buddhistEra';
 import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
+import { ButtonBack } from "../../components/button";
 
 import DashBoardService from '../../service/DashBoard.service';
 
@@ -23,7 +24,6 @@ const dataMenuDashBoard = [
   },
 ];
 
-const pagging = { pagination: { current: 1, pageSize: 10, }, };
 const dsbservice = DashBoardService();
 function DashBoard() {
   const [selectedMenu, setSelectedMenu] = useState(null);
@@ -31,12 +31,13 @@ function DashBoard() {
   const [listcourse, setListCourse] = useState([]);
   const [liststudent, setListStudent] = useState([]);
   const [form] = Form.useForm();
-  const [columnGroupReport, setColumnGroupReport] = useState([]);
-  const [coursename, SetCourseName] = useState(null);
-
+  const [columnReport, setColumnReport] = useState([]);
+  const [coursename, setCourseName] = useState(null);
+  const [isStudentSelectDisabled, setIsStudentSelectDisabled] = useState(true); 
+  const [isShowDataList, setIsShowDataList] = useState(false); 
   dayjs.extend(buddhistEra);
   dayjs.locale('th');
-
+  const gotoFrom = "/dashboard";
   const formatDate = (date) => {
     if (!!date) {
       return dayjs(date).format('DD MMM BBBB');
@@ -87,12 +88,11 @@ function DashBoard() {
   ];
 
   const hendelOpenMenu = async (value) => {
-    console.log(value)
     try {
       //Get Data Type Report
       const res = await dsbservice.getReport({ menu: value }).catch((error) => message.error("get report data fail."));
       const {
-        data: { courses, student },
+        data: { courses },
       } = res.data;
       setListCourse(courses);
       //setListStudent(student);
@@ -111,7 +111,6 @@ function DashBoard() {
   const handleSearch = () => {
     form.validateFields().then(v => {
       const data = { ...v };
-      debugger
       if (!!data) {
         let courses = data.courses;
         let student = null;
@@ -120,44 +119,43 @@ function DashBoard() {
           student = data.student;
           report_type = 2;
         }
+        let selectedCourse = listcourse.find(course => course.value === courses);
+        setCourseName(selectedCourse?.label || '');
         Object.assign(data, { courses, student, report_type });
-        console.log(data);
         setTimeout(() => getDataReport(data), 80);
       }
-
     }).catch(err => {
       console.warn(err);
     })
   }
 
   const getDataReport = (data) => {
+    setListData([]);
     dsbservice.getDataReport(data).then(res => {
-      const { data } = res.data.data;
-      let result = {};
-      debugger
-      SetCourseName(data[0].course_name);
+      const { data, course } = res.data.data;
       //add column header 
-      if (selectedMenu === 1) {
-        for (let i = 1; i <= data[0].number_of_sessions; i++) {
-          dynamicColumns.push({
-            title: `ครั้งที่ ${i}`,
-            dataIndex: `session_date_${i}`,
-            key: `session_date_${i}`,
-            align: `center`,
-            render: (date) => formatDate(date),
-          });
-        }
-        setColumnGroupReport(dynamicColumns);
-        debugger
-        console.log(columnGroupReport);
-        result = pivotData(data);
-        debugger
-        console.log(result);
-        setListData(result);
-      } else if (selectedMenu === 2) {
-
+      for (let i = 1; i <= course.number_of_sessions; i++) {
+        dynamicColumns.push({
+          title: `ครั้งที่ ${i}`,
+          dataIndex: `session_date_${i}`,
+          key: `session_date_${i}`,
+          align: `center`,
+          render: (date) => formatDate(date),
+        });
       }
-      //end 
+      setIsShowDataList(true);
+      if(data.length > 0){
+        let result = {};
+        
+        if (selectedMenu === 1) {
+          result = pivotData(data);
+          setListData(result);
+        } else if (selectedMenu === 2) {
+          result = pivotData(data);
+          setListData(result);
+        }
+      }
+      setColumnReport(dynamicColumns); 
 
     }).catch(err => {
       console.log(err);
@@ -167,14 +165,13 @@ function DashBoard() {
   const handleClear = () => {
     form.resetFields();
     setListData([]);
-    handleSearch();
+    setIsShowDataList(false);
   };
   const pivotData = (data) => {
     const result = {};
     data.forEach(item => {
       const studentKey = `${item.name} ${item.last_name} ${item.nickname}`;
 
-      // ถ้าข้อมูลนักเรียนยังไม่ถูกบันทึกใน result ให้สร้าง object ใหม่
       if (!result[studentKey]) {
         result[studentKey] = {
           name: item.name,
@@ -188,13 +185,10 @@ function DashBoard() {
         };
       }
 
-      // บันทึก session_date ตาม attendance_count โดยสร้างคอลัมน์ sessions_X
       result[studentKey][`session_date_${item.attendance_count}`] = item.session_date;
     });
 
-    // แปลง object กลับเป็น array เพื่อใช้งานง่ายขึ้น
     return Object.values(result).map(student => {
-      // เติมคอลัมน์ sessions_X ที่อาจไม่มีให้เป็น null
       for (let i = 1; i <= student.number_of_sessions; i++) {
         if (!student[`session_date_${i}`]) {
           student[`session_date_${i}`] = null;
@@ -204,7 +198,17 @@ function DashBoard() {
     });
   }
 
-  const TitleTable = (
+  const handleCourseChange = async (value) => {
+    
+    const res = await dsbservice.getListStudentByCourse({ course: value }).catch((error) => message.error("get list data student fail."));
+    const { data } = res.data;
+    if(!!data){
+      setListStudent(data);
+      setIsStudentSelectDisabled(false);
+    }
+  };
+
+  const TitleTableGroup = (
     <Flex className='width-100' align='center'>
       <Col span={12} className='p-0'>
         <Flex gap={4} justify='start' align='center'>
@@ -212,6 +216,30 @@ function DashBoard() {
         </Flex>
       </Col>
     </Flex>
+  );
+
+  const TitleTable = (
+    <Flex className='width-100' align='center'>
+      <Col span={12} className='p-0'>
+        <Flex gap={4} justify='start' align='center'>
+          <Typography.Title className='m-0 !text-zinc-800' level={3}>รายงานแบบรายบุคคล : {coursename} คอร์ส : {coursename}</Typography.Title>
+        </Flex>
+      </Col>
+    </Flex>
+  );
+  const SectionBottom = (
+    <Row
+      gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
+      className="mt-5"
+    >
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start">
+          <ButtonBack target={gotoFrom} />
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+      </Col>
+    </Row>
   );
 
   const ListMenu = (
@@ -279,17 +307,19 @@ function DashBoard() {
                               <Select
                                 style={{ width: '100%', height: 40 }}
                                 options={listcourse}
+                                onChange={(value) => handleCourseChange(value)}
                               />
                             </Form.Item>
                           </Col>
                           <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                             <Form.Item
                               label="ชื่อ-นามสกุลนักเรียน"
-                              name="student_code"
+                              name="student"
                             >
                               <Select
                                 style={{ width: '100%', height: 40 }}
-                                options={null}
+                                options={liststudent}
+                                disabled={isStudentSelectDisabled}
                               />
                             </Form.Item>
                           </Col>
@@ -332,16 +362,16 @@ function DashBoard() {
           />
 
         )}
-        {listdata.length > 0 && (
+        {isShowDataList && (
           <Card style={{ marginTop: '20px' }}>
             <Row gutter={[8, 8]} className='m-0'>
               <Col xs={24} sm={24} md={24} lg={24} xl={24}>
                 {selectedMenu === 1 ? (
                   <Table
-                    title={() => TitleTable}
+                    title={() => TitleTableGroup}
                     size='small'
                     rowKey="student_code"
-                    columns={columnGroupReport}
+                    columns={columnReport}
                     dataSource={listdata}
                     scroll={{ x: 'max-content' }}
                   />
@@ -350,7 +380,7 @@ function DashBoard() {
                     title={() => TitleTable}
                     size='small'
                     rowKey="student_code"
-                    columns={columnGroupReport}
+                    columns={columnReport}
                     dataSource={listdata}
                     scroll={{ x: 'max-content' }}
                   />
@@ -360,6 +390,9 @@ function DashBoard() {
           </Card>
         )}
       </div>
+      {isShowDataList && (
+        SectionBottom
+      )}
       </div>
     </>
 
