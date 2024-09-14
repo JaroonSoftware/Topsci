@@ -4,20 +4,22 @@ include_once(dirname(__FILE__, 2)."/onload.php");
 include_once(dirname(__FILE__, 2)."/common/fnc-code.php");
 $db = new DbConnect;
 $conn = $db->connect(); 
- 
-if ($_SERVER["REQUEST_METHOD"] == "GET"){
-    extract($_GET, EXTR_OVERWRITE, "_"); 
-   
+
+if ($_SERVER["REQUEST_METHOD"] == "POST"){
+    $rest_json = file_get_contents("php://input");
+    $_POST = json_decode($rest_json, true);
+    extract($_POST, EXTR_OVERWRITE, "_"); 
+
     try {  
-        $sql = "select s.student_code,CONCAT_WS(' ',s.firstname,s.lastname) as student_name,s.degree,s.school ";
+        $student = null;
+        $sql = "SELECT s.student_code as value,CONCAT_WS(' ',s.firstname,s.lastname) as label";
         $sql .= " from courses_student cs left join student s on cs.student_code = s.student_code";        
         $sql .= " where cs.course_id  = :code";
-        
         $stmt = $conn->prepare($sql); 
-        if (!$stmt->execute(['code' => $code ])){
+        if (!$stmt->execute(['code' => $course ])){
             $error = $conn->errorInfo(); 
             http_response_code(404);
-            throw new PDOException("Geting data error => $error");
+            throw new PDOException("Geting student list data error => $error");
         }
         $student = $stmt->fetchAll(PDO::FETCH_ASSOC);
 

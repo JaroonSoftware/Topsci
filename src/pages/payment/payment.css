@@ -1,0 +1,47 @@
+
+@media screen and (max-width: 768px) {
+  .payment-manage .ant-drawer-content-wrapper {
+     width: 100vw !important; /* Adjust the width for smaller screens */
+   } 
+}
+
+@media screen and (min-width: 768px) {
+  .payment-manage .ant-drawer-content-wrapper {
+      width: 40vw !important; /* Set a fixed width for larger screens */
+    } 
+}
+
+
+.payment-manage-form .ant-descriptions-item-label{
+    min-width: 120px;
+}
+.custom-input-number {
+    height: 40px;
+    display: flex;
+    align-items: center;
+  }
+
+.payment-button {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.payment-button:hover {
+  background-color: #28a745;
+  color: white;
+}
+
+.badge-success .ant-badge-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #52c41a;
+}
+.badge-warning .ant-badge-count {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #faad14;
+}

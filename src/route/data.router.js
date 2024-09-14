@@ -10,6 +10,7 @@ import { Teacher, TeacherAccess, TeacherManage } from "../pages/teachers";
 import { Subjects, SubjectsAccess, SubjectsManage } from "../pages/subjects";
 import { Courses, CoursesAccess, CoursesManage } from "../pages/courses";
 import { Checking, CheckingAccess, CheckingManage } from "../pages/checking";
+import { Payment, PaymentAccess, PaymentManage } from "../pages/payment";
 
 export const DataRouter = (
   <>
@@ -58,5 +59,9 @@ export const DataRouter = (
       <Route path="manage/:action" element={<CheckingManage />} />
     </Route>
     
+    <Route path="/payment/" exact element={<Payment />}>
+      <Route index element={<PaymentAccess />} />
+      <Route path="manage/:action" element={<PaymentManage />} />
+    </Route>
   </>
 );

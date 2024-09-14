@@ -1,388 +1,403 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, {useEffect, useMemo, useState} from 'react'; 
-import CountUp from 'react-countup'; 
-import { Drawer, Card, Col, Flex, Row, Space, Statistic, Table, Typography } from 'antd';
-import { 
-    sampleListColumn, 
-    sampleWaitingApproveColumn, 
-    itemFileExpireColumn,
-    statisticValue,
-    sampleDetailColumn,
-} from './model';
-
-import { FiFileText } from "react-icons/fi";
-import { LuFileClock } from "react-icons/lu";
+import React, { useEffect, useMemo, useState } from 'react';
+import CountUp from 'react-countup';
+import "./dashboard.css";
+import { Divider, Card, List, Flex, Row, Space, Typography, message, Table, Form, Col, Collapse, Select } from 'antd';
+import { Input, Button } from "antd";
+import dayjs from 'dayjs';
+import 'dayjs/locale/th';
+import buddhistEra from 'dayjs/plugin/buddhistEra';
+import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
+import { ButtonBack } from "../../components/button";
 
 import DashBoardService from '../../service/DashBoard.service';
 
-const pagging = { pagination: { current: 1, pageSize: 10, }, };
+const dataMenuDashBoard = [
+  {
+    title: 'รายงานแบบกลุ่ม',
+    value: 1,
+  },
+  {
+    title: 'รายงานแบบรายบุคคล',
+    value: 2,
+  },
+];
+
 const dsbservice = DashBoardService();
 function DashBoard() {
-    const [mounted, setMounted] = useState( false );
-    const [sampleListSource, setSampleListSource] = useState([]);
-    const [sampleListloading, setSampleListLoading] = useState(false);
-    const [sampleListParams, setSampleListParams] = useState({ ...pagging });
+  const [selectedMenu, setSelectedMenu] = useState(null);
+  const [listdata, setListData] = useState([]);
+  const [listcourse, setListCourse] = useState([]);
+  const [liststudent, setListStudent] = useState([]);
+  const [form] = Form.useForm();
+  const [columnReport, setColumnReport] = useState([]);
+  const [coursename, setCourseName] = useState(null);
+  const [isStudentSelectDisabled, setIsStudentSelectDisabled] = useState(true); 
+  const [isShowDataList, setIsShowDataList] = useState(false); 
+  dayjs.extend(buddhistEra);
+  dayjs.locale('th');
+  const gotoFrom = "/dashboard";
+  const formatDate = (date) => {
+    if (!!date) {
+      return dayjs(date).format('DD MMM BBBB');
+    } else {
+      return '';
+    }
+  };
 
-    const [sampleWaitingApproveSource, setSampleWaitingApproveSource] = useState([]);
-    const [sampleWaitingApproveLoading, setSampleWaitingApproveLoading] = useState(false);
-    const [sampleWaitingApproveParams, setSampleWaitingApproveParams] = useState({ ...pagging });
+  const dynamicColumns = [
+    {
+      title: "ชื่อ",
+      dataIndex: "name",
+      key: "name",
+      align: "left",
+    },
+    {
+      title: "นามสกุล",
+      dataIndex: "last_name",
+      key: "last_name",
+      align: "left",
+    },
+    {
+      title: "ชื่อเล่น",
+      align: "center",
+      key: "nick_name",
+      dataIndex: "nick_name",
+    },
+    {
+      title: "วันที่ชำระเงิน",
+      dataIndex: "last_payment_date",
+      key: "last_payment_date",
+      align: "center",
+      render: (date) => formatDate(date),
+    },
+    {
+      title: "จำนวนเงิน",
+      dataIndex: "price",
+      key: "price",
+      align: "rigth",
+    },
+    {
+      title: "วันที่เริ่มเรียนของรอบ",
+      dataIndex: "date_sessions",
+      key: "date_sessions",
+      align: "center",
+      render: (date) => formatDate(date),
+    },
+  ];
 
-    const [sampleDetailSource, setSampleDetailSource] = useState([]);
-    const [sampleDetailLoading,setSampleDetailLoading] = useState(false);
-    const [sampleDetailParams, setSampleDetailParams] = useState({ ...pagging });
+  const hendelOpenMenu = async (value) => {
+    try {
+      //Get Data Type Report
+      const res = await dsbservice.getReport({ menu: value }).catch((error) => message.error("get report data fail."));
+      const {
+        data: { courses },
+      } = res.data;
+      setListCourse(courses);
+      //setListStudent(student);
+    } catch (error) {
+      console.error('Error fetching data:', error);
+      message.error('Error');
+    }
+    setSelectedMenu(value);
+  }
+
+  const findTitleByValue = (value) => {
+    const result = dataMenuDashBoard.find(item => item.value === value);
+    return result ? result.title : 'ไม่พบข้อมูล';
+  };
+
+  const handleSearch = () => {
+    form.validateFields().then(v => {
+      const data = { ...v };
+      if (!!data) {
+        let courses = data.courses;
+        let student = null;
+        let report_type = 1;
+        if (selectedMenu === 2) {
+          student = data.student;
+          report_type = 2;
+        }
+        let selectedCourse = listcourse.find(course => course.value === courses);
+        setCourseName(selectedCourse?.label || '');
+        Object.assign(data, { courses, student, report_type });
+        setTimeout(() => getDataReport(data), 80);
+      }
+    }).catch(err => {
+      console.warn(err);
+    })
+  }
+
+  const getDataReport = (data) => {
+    setListData([]);
+    dsbservice.getDataReport(data).then(res => {
+      const { data, course } = res.data.data;
+      //add column header 
+      for (let i = 1; i <= course.number_of_sessions; i++) {
+        dynamicColumns.push({
+          title: `ครั้งที่ ${i}`,
+          dataIndex: `session_date_${i}`,
+          key: `session_date_${i}`,
+          align: `center`,
+          render: (date) => formatDate(date),
+        });
+      }
+      setIsShowDataList(true);
+      if(data.length > 0){
+        let result = {};
+        
+        if (selectedMenu === 1) {
+          result = pivotData(data);
+          setListData(result);
+        } else if (selectedMenu === 2) {
+          result = pivotData(data);
+          setListData(result);
+        }
+      }
+      setColumnReport(dynamicColumns); 
+
+    }).catch(err => {
+      console.log(err);
+      message.error("Request error!");
+    });
+  }
+  const handleClear = () => {
+    form.resetFields();
+    setListData([]);
+    setIsShowDataList(false);
+  };
+  const pivotData = (data) => {
+    const result = {};
+    data.forEach(item => {
+      const studentKey = `${item.name} ${item.last_name} ${item.nickname}`;
+
+      if (!result[studentKey]) {
+        result[studentKey] = {
+          name: item.name,
+          last_name: item.last_name,
+          nickname: item.nickname,
+          last_payment_date: item.last_payment_date,
+          price: item.price,
+          student_code: item.student_code,
+          number_of_sessions: item.number_of_sessions,
+          date_sessions: item.date_sessions
+        };
+      }
+
+      result[studentKey][`session_date_${item.attendance_count}`] = item.session_date;
+    });
+
+    return Object.values(result).map(student => {
+      for (let i = 1; i <= student.number_of_sessions; i++) {
+        if (!student[`session_date_${i}`]) {
+          student[`session_date_${i}`] = null;
+        }
+      }
+      return student;
+    });
+  }
+
+  const handleCourseChange = async (value) => {
     
-    const [srDetailOpen, setSrDetailOpen] = useState(false);
-    const [srDetailSelected, setSrDetailSelected] = useState(null);
-
-    const [filesExpireSource,  setFilesExpireSource] = useState([]);
-    const [filesExpireLoading, setFilesExpireLoading] = useState(false);
-    const [filesExpireParams,  setFilesExpireParams] = useState({ ...pagging });
-
-    const [statisticData,  setStatistic] = useState({ ...statisticValue });
-    
-    const formatter = (value) => <CountUp end={value} separator="," delay={1.4} />;
-    const showTotal = (total, range) => {
-        // console.log( total, range); 
-        return `${range.join("-")} of ${total} items.`;
+    const res = await dsbservice.getListStudentByCourse({ course: value }).catch((error) => message.error("get list data student fail."));
+    const { data } = res.data;
+    if(!!data){
+      setListStudent(data);
+      setIsStudentSelectDisabled(false);
     }
+  };
 
-    const showSrDetail = (value) => {
-        const { srcode } = value;
+  const TitleTableGroup = (
+    <Flex className='width-100' align='center'>
+      <Col span={12} className='p-0'>
+        <Flex gap={4} justify='start' align='center'>
+          <Typography.Title className='m-0 !text-zinc-800' level={3}>รายงานแบบกลุ่มคอร์ส : {coursename}</Typography.Title>
+        </Flex>
+      </Col>
+    </Flex>
+  );
 
-        setSrDetailSelected( srcode );
+  const TitleTable = (
+    <Flex className='width-100' align='center'>
+      <Col span={12} className='p-0'>
+        <Flex gap={4} justify='start' align='center'>
+          <Typography.Title className='m-0 !text-zinc-800' level={3}>รายงานแบบรายบุคคล : {coursename} คอร์ส : {coursename}</Typography.Title>
+        </Flex>
+      </Col>
+    </Flex>
+  );
+  const SectionBottom = (
+    <Row
+      gutter={[{ xs: 32, sm: 32, md: 32, lg: 12, xl: 12 }, 8]}
+      className="mt-5"
+    >
+      <Col span={12} className="p-0">
+        <Flex gap={4} justify="start">
+          <ButtonBack target={gotoFrom} />
+        </Flex>
+      </Col>
+      <Col span={12} style={{ paddingInline: 0 }}>
+      </Col>
+    </Row>
+  );
 
-        fetchSampleDetailData(false);
-        setSrDetailOpen(true);
-    }
+  const ListMenu = (
+    <>
+      <List
+        size="large"
+        header={<div style={{ fontSize: '20px', fontWeight: 'bold' }}>ข้อมูลต่างๆ</div>}
+        bordered
+        dataSource={dataMenuDashBoard}
+        renderItem={(item, index) =>
+          <List.Item>
+            <List.Item.Meta
+              title={<a onClick={() => hendelOpenMenu(item.value)}>{item.title}</a>}
+            />
+          </List.Item>
+        }
+      />
+    </>
+  );
 
-    const CardStatistic = useMemo( () =>({bgColor, title, value, icon})=>{ 
-        // console.log( value );
-        return (
-        <> 
-            <Card className='flex w-full' style={{backgroundColor:bgColor, borderRadius:'2rem',  color:'#fff', height:'100%' }} >
-                <Flex className='w-full' gap={10} align='center'>
-                    <Flex justify='center'>
-                        <div className='p-4 text-4xl' style={{backgroundColor:'rgb(255 255 255 / 35%)', borderRadius:'calc( 2rem - 16px )'}} >{icon}</div>
-                    </Flex>
-                    <Flex vertical>
-                        <Typography.Title style={{fontSize: 'clamp( 14px, 1.12vw, 20px)'}} className='!mb-2 font-semibold !text-slate-100 uppercase' >{title}</Typography.Title>
-                        <Statistic 
-                            value={value} 
-                            className='font-semibold !text-slate-100 uppercase' 
-                            formatter={formatter} 
-                            suffix="Case." 
-                            valueStyle={{fontSize: 'clamp( 11px, .9vw, 17.6px)', color:'rgb(241 245 249 / var(--tw-text-opacity))'}} 
-                        />
-                    </Flex>
-                </Flex> 
-            </Card>         
-        </>
-        )
-    }, [statisticData])
+  return (
+    <>
+      <div className='layout-content px-3 sm:px-5 md:px-5'>
 
-    const CardSampleList = ()=>{ 
-        return (
-        <> 
-            <Card 
-            className='w-full' 
-            style={{borderRadius:'2rem', height:'100%'}} 
-            title={(
-                <Typography.Title level={4} className='m-0 font-semibold !text-slate-700 uppercase' >
-                    Sample List
-                </Typography.Title>
-            )}> 
-                <Table 
-                    bordered={false}
+      
+      <div className='drawer-dashboard'>
+        {!selectedMenu && ListMenu}
+        {selectedMenu && (
+          <Collapse
+            size="small"
+            // onChange={(e) => {
+            //   setActiveSearch(e);
+            // }}
+            bordered={true}
+            activeKey={1}
+            items={[
+              {
+                key: "1",
+                label: <><span> <b>{findTitleByValue(selectedMenu)}</b> </span></>,
+                children: (
+                  <>
+                    <Form form={form} layout="vertical" autoComplete="off" >
+                      {selectedMenu === 1 ? (
+                        <Row gutter={[8, 8]} justify="center">
+                          <Col xs={24} sm={12} md={12} lg={12} xl={12}>
+                            <Form.Item
+                              label="คอร์สเรียน"
+                              name="courses"
+                              rules={[{ required: true, message: "กรุณาเลือกคอร์สที่ต้องการดูข้อมูล!" }]}
+                            >
+                              <Select
+                                style={{ width: '100%', height: 40 }}
+                                options={listcourse}
+                              />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      ) : selectedMenu === 2 ? (
+                        <Row gutter={[8, 8]} justify="center">
+                          <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                            <Form.Item
+                              label="คอร์สเรียน"
+                              name="courses"
+                            >
+                              <Select
+                                style={{ width: '100%', height: 40 }}
+                                options={listcourse}
+                                onChange={(value) => handleCourseChange(value)}
+                              />
+                            </Form.Item>
+                          </Col>
+                          <Col xs={24} sm={8} md={8} lg={8} xl={8}>
+                            <Form.Item
+                              label="ชื่อ-นามสกุลนักเรียน"
+                              name="student"
+                            >
+                              <Select
+                                style={{ width: '100%', height: 40 }}
+                                options={liststudent}
+                                disabled={isStudentSelectDisabled}
+                              />
+                            </Form.Item>
+                          </Col>
+                        </Row>
+                      ) : null}
+                      <Row gutter={[8, 8]}>
+                        <Col xs={24} sm={8} md={12} lg={12} xl={12}>
+                          {/* Ignore */}
+                        </Col>
+                        <Col xs={24} sm={8} md={12} lg={12} xl={12}>
+                          <Flex justify="flex-end" gap={8}>
+                            <Button
+                              type="primary"
+                              size="small"
+                              className="bn-action"
+                              icon={<SearchOutlined />}
+                              onClick={() => handleSearch()}
+                            >
+                              ค้นหา
+                            </Button>
+                            <Button
+                              type="primary"
+                              size="small"
+                              className="bn-action"
+                              danger
+                              icon={<ClearOutlined />}
+                              onClick={() => handleClear()}
+                            >
+                              ล้าง
+                            </Button>
+                          </Flex>
+                        </Col>
+                      </Row>
+                    </Form>
+                  </>
+                ),
+                showArrow: false,
+              },
+            ]}
+          />
+
+        )}
+        {isShowDataList && (
+          <Card style={{ marginTop: '20px' }}>
+            <Row gutter={[8, 8]} className='m-0'>
+              <Col xs={24} sm={24} md={24} lg={24} xl={24}>
+                {selectedMenu === 1 ? (
+                  <Table
+                    title={() => TitleTableGroup}
                     size='small'
-                    columns={sampleListColumn({handleShowDetail : showSrDetail})} 
-                    dataSource={sampleListSource} 
-                    rowKey="srcode" 
-                    pagination={{...sampleListParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-                    loading={sampleListloading}
-                    onChange={handleSampleListChange}
+                    rowKey="student_code"
+                    columns={columnReport}
+                    dataSource={listdata}
                     scroll={{ x: 'max-content' }}
-                /> 
-            </Card>
-        </>
-        )
-    }
-
-    // const CardSampleList = ()=>{ 
-    //     return (
-    //     <> 
-    //         <Card 
-    //         className='w-full' 
-    //         style={{borderRadius:'2rem', height:'100%'}} 
-    //         title={(
-    //             <Typography.Title level={4} className='m-0 font-semibold !text-slate-700 uppercase' >
-    //                 Sample List
-    //             </Typography.Title>
-    //         )}> 
-    //             <Table 
-    //                 bordered={false}
-    //                 size='small'
-    //                 columns={sampleWaitingApproveColumn} 
-    //                 dataSource={sampleListSource} 
-    //                 rowKey="spcode" 
-    //                 pagination={{...sampleListParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-    //                 loading={sampleListloading}
-    //                 onChange={handleSampleListChange}
-    //                 scroll={{ x: 'max-content' }}
-    //             /> 
-    //         </Card>
-    //     </>
-    //     )
-    // }
-
-    const CardSampleWaitingApprove = ()=>{ 
-        return (
-        <> 
-            <Card 
-            className='w-full' 
-            style={{borderRadius:'2rem', height:'100%'}} 
-            title={(
-                <Typography.Title level={4} className='m-0 font-semibold !text-slate-700 uppercase' >
-                    Sample Waiting Approve
-                </Typography.Title>
-            )}> 
-                <Table 
-                    bordered={false}
+                  />
+                ) : selectedMenu === 2 ? (
+                  <Table
+                    title={() => TitleTable}
                     size='small'
-                    columns={sampleWaitingApproveColumn} 
-                    dataSource={sampleWaitingApproveSource} 
-                    rowKey="spcode" 
-                    pagination={{...sampleWaitingApproveParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-                    loading={sampleWaitingApproveLoading}
-                    onChange={handleSampleWaitingApproveChange}
+                    rowKey="student_code"
+                    columns={columnReport}
+                    dataSource={listdata}
                     scroll={{ x: 'max-content' }}
-                /> 
-            </Card>
-        </>
-        )
-    } 
+                  />
+                ) : null}
+              </Col>
+            </Row>
+          </Card>
+        )}
+      </div>
+      {isShowDataList && (
+        SectionBottom
+      )}
+      </div>
+    </>
 
-    const CardSampleDetail = () => { 
-        return (
-        <> 
-            <Card 
-            className='w-full' 
-            style={{ height:'100%'}} 
-            title={(
-                <Typography.Title level={5} className='m-0 font-semibold !text-slate-700 uppercase' >
-                    Sample Name List
-                </Typography.Title>
-            )}> 
-                <Table 
-                    bordered={false}
-                    size='small'
-                    columns={sampleDetailColumn} 
-                    dataSource={sampleDetailSource} 
-                    rowKey="id" 
-                    pagination={{...sampleDetailParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-                    loading={sampleDetailLoading}
-                    onChange={handleSampleDetailChange}
-                    scroll={{ x: 'max-content' }}
-                    locale = {{ emptyText: <span>{'\u00A0'}</span> }}
-                /> 
-            </Card>
-        </>
-        )
-    }
-
-    // const CardFilesExpire = ()=>{ 
-    //     return (
-    //     <> 
-    //         <Card 
-    //         className='w-full' 
-    //         style={{borderRadius:'2rem', height:'100%'}} 
-    //         title={(
-    //             <Typography.Title level={4} className='m-0 font-semibold !text-slate-700 uppercase' >
-    //                 Files Expiry Alert
-    //             </Typography.Title>
-    //         )}> 
-    //             <Table 
-    //                 bordered={false}
-    //                 size='small'
-    //                 columns={itemFileExpireColumn} 
-    //                 dataSource={filesExpireSource} 
-    //                 rowKey="id" 
-    //                 pagination={{...filesExpireParams.pagination, showSizeChanger:false, showTotal:showTotal}}
-    //                 loading={filesExpireLoading}
-    //                 onChange={handleFilesExpireChange}
-    //                 scroll={{ x: 'max-content' }}
-    //             /> 
-    //         </Card>
-    //     </>
-    //     )
-    // }
-
-    const fetchSampleWaitingApproveData = async (load = false) => {
-        setSampleWaitingApproveLoading(true && load);
-        const res = await dsbservice.samplelist(  { ...sampleWaitingApproveParams, result:'waiting_approve' }, load );
-        const { data:{source, pagination} } = res.data;
-        setSampleWaitingApproveSource(source);
-        setSampleWaitingApproveLoading(false && load);
-        setSampleWaitingApproveParams( (state) => ({ ...state, pagination, }));
-    }
-
-    const fetchSampleData = async (load = false) => {
-        setSampleListLoading(true && load);
-        // const res = await dsbservice.samplelist( { ...sampleListParams, result:'approved' }, load );
-        const res = await dsbservice.sample_requestlist( { ...sampleListParams }, load );
-        const { data:{source, pagination} } = res.data;
-        setSampleListSource(source);
-        setSampleListLoading(false && load);
-        setSampleListParams( (state) => ({ ...state, pagination, }));
-    }
-
-    const fetchSampleDetailData = async (load = false) => {
-        setSampleDetailLoading(true && load);
-        const res = await dsbservice.sample_requestdetail( { ...sampleDetailParams, code: srDetailSelected }, !load );
-        const { data:{source, pagination} } = res.data;
-        setSampleDetailSource(source);
-        setSampleDetailLoading(false && load);
-        setSampleDetailParams( (state) => ({ ...state, pagination, }));
-    }
-
-    // const fetchFilesExpireData = async (load = false) => {
-    //     setFilesExpireLoading(true && load);
-    //     const res = await dsbservice.filesexpire( { ...filesExpireParams }, load );
-    //     const { data:{source, pagination} } = res.data;
-    //     setFilesExpireSource(source);
-    //     setFilesExpireLoading(false && load);
-    //     setFilesExpireParams( (state) => ({ ...state, pagination, }));
-    // }
-
-    const fetchStatisticData = async () => {
-        const res = await dsbservice.statistics();
-        const { data } = res.data;
-        setStatistic( state => ({...state, ...data}))
-    }
-
-    // useEffect(() => {
-    //   if( mounted ) fetchSampleData( true );
-    // }, [JSON.stringify(sampleListParams)]);
-
-    // useEffect(() => {
-    //   if( mounted ) fetchSampleWaitingApproveData( true );
-    // }, [JSON.stringify(sampleWaitingApproveParams)]);
-
-    // useEffect(() => {
-    //   if( mounted ) fetchSampleDetailData( false );
-    // }, [JSON.stringify(sampleDetailParams)]);
-
-    // useEffect(() => {
-    //   if( mounted ) fetchFilesExpireData( true );
-    // }, [JSON.stringify(filesExpireParams)]);
-
-    // useEffect(() => {
-    //     const initeial = async () => {
-    //         await Promise.all([
-    //             fetchSampleData( false ), 
-    //             fetchSampleWaitingApproveData( false ),
-    //             // fetchFilesExpireData( false ),
-    //             fetchStatisticData(),
-    //         ]); 
-
-    //         setTimeout( () =>setMounted(true) , 400);
-    //     } 
-
-    //     if( !mounted ) initeial();
-    // }, []);
-
-    const handleSampleListChange = (pagination, filters, sorter) => {
-      setSampleListParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleListParams.pagination?.pageSize) {
-        setSampleListSource([]);
-      }
-    };    
-
-    const handleSampleWaitingApproveChange = (pagination, filters, sorter) => {
-      setSampleWaitingApproveParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleWaitingApproveParams.pagination?.pageSize) {
-        setSampleWaitingApproveSource([]);
-      }
-    };    
-
-    const handleSampleDetailChange = (pagination, filters, sorter) => {
-      setSampleDetailParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleDetailParams.pagination?.pageSize) {
-        setSampleDetailSource([]);
-      }
-    };    
-
-    const handleFilesExpireChange = (pagination, filters, sorter) => {
-      setFilesExpireParams({ pagination, filters, ...sorter, }); 
-      // `dataSource` is useless since `pageSize` changed
-      if (pagination.pageSize !== sampleListParams.pagination?.pageSize) {
-        setFilesExpireSource([]);
-      }
-    };    
-
-    return (
-        <>
-        <div className='layout-content px-3 sm:px-5 md:px-5'>
-            <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative', paddingInline:"1.34rem" }} className='dashboard' id='dashboard' >
-                {/* <Row gutter={[12, 12]}>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
-                        <div style={{height:'100%'}}> 
-                            <CardStatistic bgColor="#8f8df9" title="Sample Daily" icon={<FiFileText />} value={statisticData.daily} />
-                        </div>
-                    </Col>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
-                        <div style={{height:'100%'}}>
-                            <CardStatistic bgColor="#fe8992" title="Sample Monthly" icon={<FiFileText />} value={statisticData.monthly} />
-                        </div>
-                    </Col>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
-                        <div style={{height:'100%'}}>
-                            <CardStatistic bgColor="#3987d3" title="Sample Yearly" icon={<FiFileText />} value={statisticData.yearly} />
-                        </div>
-                    </Col>
-                    <Col xs={24} sm={12} md={12} lg={6} xl={6}>
-                        <div style={{height:'100%'}}>
-                            <CardStatistic bgColor="#ffd19d" title="Sample Waiting Approve" icon={<LuFileClock />} value={statisticData.waiting} />
-                        </div>
-                    </Col>
-                </Row>
-                <Row gutter={[18, 12]} style={{minHeight:380}}>
-                    <Col xs={24} sm={12} md={12} lg={14} xl={14} >
-                        <div style={{height:'100%'}}>
-                            <CardSampleList />
-                        </div>
-                    </Col>
-                    <Col xs={24} sm={12} md={12} lg={10} xl={10} >
-                        <div style={{height:'100%'}}>
-                            <CardSampleWaitingApprove /> 
-
-                        </div>
-                    </Col>
-                </Row>  */}
-            </Space> 
-        </div>
-            <div className='drawer-dashboard'> 
-                <Drawer 
-                title="Sample Details"
-                className="responsive-drawer"
-                width={668}
-                onClose={() => { 
-                    setSrDetailOpen(false);
-                    setSrDetailSelected( null );
-                    setSampleDetailSource([]);
-                }} 
-                getContainer={() => document.querySelector(".drawer-dashboard")}
-                open={srDetailOpen}
-                >
-                    { srDetailOpen && <CardSampleDetail /> }
-                </Drawer> 
-            </div> 
-        </>
-
-    )
+  )
 }
 
 export default DashBoard
+

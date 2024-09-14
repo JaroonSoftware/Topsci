@@ -3,6 +3,7 @@ import { MdOutlineDashboard,MdMenuBook  } from "react-icons/md";
 import { FaUserCircle,FaUserGraduate   } from "react-icons/fa";
 import { VscRepoClone  } from "react-icons/vsc";
 import { ImBooks } from "react-icons/im";
+import { BiMoneyWithdraw } from "react-icons/bi";
 let _nav = [
   {
     title: "MENU",
@@ -21,6 +22,11 @@ let _nav = [
     title: "การเข้าเรียน",
     icon: <VscRepoClone className="nav-ico" />,
     to: "/checking",
+  },
+  {
+    title: "การชำระเงิน",
+    icon: <BiMoneyWithdraw className="nav-ico" />,
+    to: "/payment",
   },
   {
     title: "DATA",
