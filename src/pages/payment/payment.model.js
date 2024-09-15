@@ -4,6 +4,8 @@ import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { DollarOutlined, FileSearchOutlined } from '@ant-design/icons';
+import BillPDF from './BillPDF';
+import { pdf } from '@react-pdf/renderer'; // ใช้ pdf() ในการสร้าง Blob จาก PDF
 
 /** export component for edit table */
 export const componentsEditable = {
@@ -119,6 +121,32 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     align: "center",
     width: 120,
     render: (text, record) => {
+      const handlePrint = async () => {
+        try {
+          // สร้าง Blob จาก BillPDF
+          const blob = await pdf(<BillPDF />).toBlob(); 
+          
+          // ตรวจสอบ Blob ที่ถูกสร้าง
+          if (!blob) {
+            console.error("Blob ไม่ถูกสร้าง");
+            return;
+          }
+      
+          const url = URL.createObjectURL(blob);
+      
+          // เปิดแท็บใหม่และสั่งพิมพ์จากแท็บใหม่แทนการใช้ iframe
+          const newWindow = window.open(url);
+          if (newWindow) {
+            newWindow.onload = () => {
+              newWindow.print();
+            };
+          } else {
+            console.error("ไม่สามารถเปิดแท็บใหม่ได้");
+          }
+        } catch (error) {
+          console.error("เกิดข้อผิดพลาด: ", error);
+        }
+      };
       if (record.last_sessions < record.number_of_sessions) {
         return (
           <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
@@ -140,6 +168,16 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                   size="small"
                 />
             </Tooltip>
+            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
+              <Button
+                type="primary" ghost
+                className="checking-button"
+                onClick={handlePrint} // เรียกฟังก์ชันเพื่อพิมพ์
+                size="small"
+              >
+                ปริ้นใบเสร็จ
+              </Button>
+            </Tooltip>
           </span>
         )
       }else{
@@ -153,6 +191,16 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                 onClick={(e) => handleDetailPayment(record.student_code)}
                 size="small"
               />
+            </Tooltip>
+            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
+              <Button
+                type="primary" ghost
+                className="checking-button"
+                onClick={handlePrint} // เรียกฟังก์ชันเพื่อพิมพ์
+                size="small"
+              >
+                ปริ้นใบเสร็จ
+              </Button>
             </Tooltip>
             {' '}
           </span>
