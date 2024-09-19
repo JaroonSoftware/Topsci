@@ -291,6 +291,10 @@ function DashBoard() {
                               rules={[{ required: true, message: "กรุณาเลือกคอร์สที่ต้องการดูข้อมูล!" }]}
                             >
                               <Select
+                                showSearch
+                                filterOption={(input, option) =>
+                                  option.label.toLowerCase().includes(input.toLowerCase())
+                                }
                                 style={{ width: '100%', height: 40 }}
                                 options={listcourse}
                               />
@@ -305,6 +309,10 @@ function DashBoard() {
                               name="courses"
                             >
                               <Select
+                                showSearch
+                                filterOption={(input, option) =>
+                                  option.label.toLowerCase().includes(input.toLowerCase())
+                                }
                                 style={{ width: '100%', height: 40 }}
                                 options={listcourse}
                                 onChange={(value) => handleCourseChange(value)}
@@ -401,3 +409,66 @@ function DashBoard() {
 
 export default DashBoard
 
+
+import React, { useState, useEffect } from 'react';
+import { Table } from 'antd';
+import axios from 'axios';
+
+const DynamicTables = () => {
+  const [tablesData, setTablesData] = useState([]);
+
+  useEffect(() => {
+    // เรียก API เพื่อดึงข้อมูลของตารางทั้งหมด
+    axios.get('your-api-endpoint')
+      .then((response) => {
+        // สมมติว่า response.data เป็น array ของ table
+        setTablesData(response.data);
+      })
+      .catch((error) => {
+        console.error('Error fetching data:', error);
+      });
+  }, []);
+
+  // คอลัมน์ตั้งต้นที่จะแสดงในทุกตาราง
+  const defaultColumns = [
+    {
+      title: 'ID',
+      dataIndex: 'id',
+      key: 'id',
+    },
+    {
+      title: 'Name',
+      dataIndex: 'name',
+      key: 'name',
+    },
+  ];
+
+  // ฟังก์ชันสำหรับสร้างคอลัมน์ โดยรวมคอลัมน์ตั้งต้นเข้ากับคอลัมน์จาก API
+  const createColumns = (table) => {
+    const apiColumns = table.columns.map((col) => ({
+      title: col.title,
+      dataIndex: col.dataIndex,
+      key: col.key,
+    }));
+
+    // รวมคอลัมน์ตั้งต้นกับคอลัมน์ที่มาจาก API
+    return [...defaultColumns, ...apiColumns];
+  };
+
+  return (
+    <div>
+      {tablesData.map((table, index) => (
+        <Table
+          key={index}
+          columns={createColumns(table)}
+          dataSource={table.data}
+          rowKey={(record) => record.id}
+          pagination={false}
+          title={() => `Table ${index + 1}`} // สามารถตั้งชื่อแต่ละตารางได้
+        />
+      ))}
+    </div>
+  );
+};
+
+export default DynamicTables;
