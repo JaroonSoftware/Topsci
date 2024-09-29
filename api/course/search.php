@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     extract($_POST, EXTR_OVERWRITE, "_");  
 
     $courses_name = !empty($courses_name) ? " and c.course_name like '%$courses_name%'" : " ";
-    $subject = !empty($subject) ? " and s.subject like '%$subject%'" : "";
+    $subject = !empty($subject) ? " and s.subject_name like '%$subject%'" : "";
     $time = !empty($time_from) ? " and (c.time_from >= '$time_from' and c.time_to <= '$time_to') " : " ";
     
     try {   
