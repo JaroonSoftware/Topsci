@@ -58,7 +58,6 @@ export const accessColumn = ({handleCheck}) => [
     align: "center",
     width: 100,
     render: (text, record) => {
-      if (record.session_count < record.number_of_sessions) {
       return <Space>
               <Button
                 type="primary" ghost
@@ -68,7 +67,6 @@ export const accessColumn = ({handleCheck}) => [
                 size="small"
               />
             </Space>
-      }
     },
   }, 
 ];

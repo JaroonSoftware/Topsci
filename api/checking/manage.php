@@ -39,18 +39,42 @@ try {
         $sessionId = $conn->lastInsertId();
         
         // insert attendance
-        $sql = "insert into attendance (session_id,student_code,status,remarks)
-        values (:session_id,:student_code,:status,:remarks)";
+        $sql = "insert into attendance (session_id,course_id,student_code,status,remarks,attendance_no,attendance_date)
+        values (:session_id,:course_id,:student_code,:status,:remarks,:attendance_no,:attendance_date)";
+        //count attendance
+        $countSql = "SELECT COUNT(*) + 1 AS attendance_count 
+             FROM attendance 
+             WHERE student_code = :student_code 
+             AND course_id = :course_id 
+             AND status = 'Y'";
         $stmt = $conn->prepare($sql);
-        if(!$stmt) throw new PDOException("Insert attendance prepare data error => {$conn->errorInfo()}");
+        $countStmt = $conn->prepare($countSql);
+        if(!$stmt || !$countStmt) throw new PDOException("Prepare data error => {$conn->errorInfo()}");
 
         foreach( $student as $ind => $val){
             $val = (object)$val;
+
+            //คิวรี่ count เพื่อหา attendance_no
+            $countStmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
+            $countStmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_INT);
+            
+            if (!$countStmt->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Count query error => $error");
+            }
+            $countResult = $countStmt->fetch(PDO::FETCH_ASSOC);
+            $attendance_no = $countResult['attendance_count'];
+
             $stmt->bindParam(":session_id", $sessionId, PDO::PARAM_INT);
+            $stmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_INT);
             $stmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
             $attendance = $val->attendance ? 'Y' : 'N';
             $stmt->bindParam(":status", ($attendance) , PDO::PARAM_STR);
             $stmt->bindParam(":remarks", ($val->reason) , PDO::PARAM_STR);
+            $attendance_no = $val->attendance ? $attendance_no : null;
+            $attendance_date = $val->attendance ? $session_date->format('Y-m-d') : null;
+            $stmt->bindParam(":attendance_no", $attendance_no , PDO::PARAM_STR);
+            $stmt->bindParam(":attendance_date", $attendance_date , PDO::PARAM_STR);
             
             if(!$stmt->execute()) {
                 $error = $conn->errorInfo();
