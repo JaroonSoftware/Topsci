@@ -147,7 +147,7 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
           console.error("เกิดข้อผิดพลาด: ", error);
         }
       };
-      if (record.last_sessions < record.number_of_sessions) {
+      if (record.last_sessions < record.number_of_payment) {
         return (
           <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
@@ -209,11 +209,13 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     },
   }, 
 ];
-export const listPaymentDetailColumn = () => [
+export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKey) => [
     {
       title: "วันที่ชำระเงิน",
       key: "payment_date",
       dataIndex: "payment_date",
+      editable: true,
+      inputType: "date",
       render: (text) => {
         const date = new Date(text);
         const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
@@ -224,10 +226,44 @@ export const listPaymentDetailColumn = () => [
       title: "จำนวนเงิน",
       dataIndex: "amount_paid",
       key: "amount_paid",
+      editable: true,
+      inputType: "number",
     },
     {
       title: "วิธีการชำระเงิน",
       dataIndex: "payment_method",
       key: "payment_method",
+      editable: true,
+      inputType: "select",
     },
-];
+    {
+      title: "Operation",
+      dataIndex: "operation",
+      render: (_, record) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <span>
+            <Tooltip placement="topLeft" title={'แก้ไขการชำระเงิน'}>
+              <Button
+                onClick={(e) => save(record.key)}
+                size="small"
+              >
+                Save
+              </Button>
+            </Tooltip>
+            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+              <Button type="link" size="small">Cancel</Button>
+            </Popconfirm>
+          </span>
+        ) : (
+          <Button
+            disabled={editingKey !== ""}
+            size="small"
+            onClick={() => edit(record)}
+          >
+            Edit
+          </Button>
+        );
+      },
+    },
+  ];

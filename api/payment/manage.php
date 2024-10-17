@@ -67,7 +67,7 @@ try {
                 ELSE 'N'
             END AS check_checking,
             c.price,
-            c.number_of_sessions,
+            c.number_of_payment,
             (SELECT COALESCE(max(ss2.session_no), 0) 
                 FROM sessions ss2 
                 WHERE ss2.course_id = c.course_id ) AS last_sessions,
