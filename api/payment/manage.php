@@ -40,6 +40,41 @@ try {
         echo json_encode(array("data"=> array("payment" => $payment->payment_date)));
 
     } else  if($_SERVER["REQUEST_METHOD"] == "PUT"){
+        $rest_json = file_get_contents("php://input");
+        $_PUT = json_decode($rest_json, true); 
+        extract($_PUT, EXTR_OVERWRITE, "_");
+        $payment = (object)$payment; 
+        // var_dump($_POST);
+        $sql = "
+        update payments 
+        set
+        payment_date = :payment_date,
+        amount_paid = :amount_paid,
+        payment_method = :payment_method
+        where payment_id = :payment_id";
+
+        $stmt = $conn->prepare($sql);
+        if(!$stmt) throw new PDOException("Update data error => {$conn->errorInfo()}"); 
+        //Update Payment
+            if (!empty($payment_date)) {
+                $paymentDate = (new DateTime($payment_date))->format('Y-m-d');
+            } else {
+                $paymentDate = null; // กรณีที่ไม่มีวันที่
+            }
+            echo $paymentDate;
+            $stmt->bindParam(":amount_paid", $amount_paid, PDO::PARAM_INT);
+            $stmt->bindParam(":payment_date", $paymentDate, PDO::PARAM_STR);
+            $stmt->bindParam(":payment_method", $payment_method, PDO::PARAM_STR);
+            $stmt->bindParam(":payment_id", $payment_id, PDO::PARAM_INT);
+            
+            if(!$stmt->execute()) {
+                $error = $conn->errorInfo();
+                throw new PDOException("Update data error => $error"); 
+            }
+    
+        $conn->commit();
+        http_response_code(200);
+        echo json_encode(array("data"=> array("payment" => $paymentDate)));
         
     } else  if($_SERVER["REQUEST_METHOD"] == "DELETE"){
         

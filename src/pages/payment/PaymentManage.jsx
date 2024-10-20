@@ -109,7 +109,6 @@ function PaymentManage() {
         };
 
         const parm = { payment };
-        //console.log(parm);
         const actions = paymentservice.addPayment;
         actions(parm)
           .then((r) => {
@@ -155,31 +154,33 @@ function PaymentManage() {
       .then((res) => {
         const { status, data } = res;
         if (status === 200) {
-          setItemsData(data.data); // ตั้งค่า items
-          setListDataPayment(data.data); // ตั้งค่ารายการการชำระเงิน
+          setItemsData(data.data); 
+          setListDataPayment(data.data);
           setDataSourceEditPayment(data.data);
           formListPaymeny.setFieldsValue({ student_name: student.student_name });
-          debugger
         }
       })
       .catch((err) => {
-        message.error("Request error!"); // แสดงข้อความ error หากเกิดปัญหา
+        message.error("Request error!");
       })
       .finally(() => {
-        // ใช้ setTimeout เพื่อ delay ก่อนเปลี่ยนสถานะ loading และเปิด modal
         setTimeout(() => {
-          setLoading(false); // ปิดการแสดง loading
-          setOpenModalListPaymen(true); // เปิด modal
-        }, 400); // 400ms delay
+          setLoading(false); 
+          setOpenModalListPaymen(true); 
+        }, 400); 
       });
   };
 
-  const isEditing = (record) => record.key === editingKey;
+  const isEditing = (record) => record.payment_id === editingKey;
 
   const edit = (record) => {
-    formEditPaymeny.setFieldsValue({ ...record });
-    setEditingKey(record.key);
+    formEditPaymeny.setFieldsValue({
+      ...record,
+      payment_date: (record.payment_date) ? dayjs(record.payment_date) : ""
+   });
+    setEditingKey(record.payment_id);
   };
+
 
   const cancel = () => {
     setEditingKey("");
@@ -187,19 +188,30 @@ function PaymentManage() {
 
   const save = async (key) => {
     try {
-      const row = await formEditPaymeny.validateFields();
+      const row = await formEditPaymeny.validateFields(); 
       const newData = [...dataSourceEditPayment];
       const index = newData.findIndex((item) => key === item.key);
-
+  
       if (index > -1) {
         const item = newData[index];
-        newData.splice(index, 1, { ...item, ...row });
-        setDataSourceEditPayment(newData);
-        setEditingKey("");
-      } else {
-        newData.push(row);
-        setDataSourceEditPayment(newData);
-        setEditingKey("");
+        const payment = {...item,...row};
+        // newData.splice(index, 1, { ...item, ...row }); 
+        // setDataSourceEditPayment(newData);
+        // setEditingKey("");
+        const parm = payment;
+        const actions = paymentservice.updatePayment;
+        actions(parm)
+          .then((r) => {
+              message.success("บันทึกข้อมูลสำเร็จ.");
+              newData.splice(index, 1, { ...item, ...row }); 
+              setDataSourceEditPayment(newData);
+              setEditingKey("");
+              Search();
+          })
+          .catch((err) => {
+            message.error("บันทึกข้อมูลไม่สำเร็จ.");
+            console.warn(err);
+          });
       }
     } catch (errInfo) {
       console.log("Validate Failed:", errInfo);
@@ -233,22 +245,16 @@ function PaymentManage() {
     children,
     ...restProps
   }) => {
-    // ตรวจสอบประเภทของ input ที่จะใช้
     let inputNode;
-    
-    debugger
+
     if (inputType === "number") {
       inputNode = <InputNumber />;
     } else if (inputType === "date") {
 
       inputNode = (
-        <DatePicker
-          format="DD/MM/YYYY"
-          onChange={(date, dateString) => formEditPaymeny.setFieldsValue({ [dataIndex]: dateString })} // เมื่อเลือกวันที่ใหม่
-        />
+        <DatePicker formate="DD-MM-YYYY" />
       );
     } else if (inputType === "select") {
-      // ตัวอย่างการใช้ Select คุณสามารถปรับรายการตัวเลือกตามข้อมูลที่คุณมี
       inputNode = (
         <Select
           style={{width:'100%', height:40}}
@@ -284,8 +290,7 @@ function PaymentManage() {
     );
   };
 
-  /** setting column table */
-  //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
+
   const columnstudent = studentColumn( listStudent, handleDetailPayment, handleAddPayment );
   const columnlistpayment = listPaymentDetailColumn();
   const SectionCourses = (
@@ -462,6 +467,7 @@ function PaymentManage() {
                             }}
                             bordered
                             dataSource={dataSourceEditPayment}
+                            rowKey="payment_id"
                             columns={mergedColumns} 
                             pagination={{ 
                                 total:listDataPayment.length, 
