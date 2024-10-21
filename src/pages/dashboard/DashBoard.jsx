@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import CountUp from 'react-countup';
 import "./dashboard.css";
-import { Divider, Card, List, Flex, Row, Space, Typography, message, Table, Form, Col, Collapse, Select } from 'antd';
+import { Modal, Divider, Card, List, Flex, Row, Space, Typography, message, Table, Form, Col, Collapse, Select } from 'antd';
 import { Input, Button } from "antd";
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
@@ -12,6 +12,7 @@ import { SearchOutlined, ClearOutlined } from "@ant-design/icons";
 import { ButtonBack } from "../../components/button";
 
 import DashBoardService from '../../service/DashBoard.service';
+const { confirm } = Modal;
 
 const dataMenuDashBoard = [
   {
@@ -37,6 +38,13 @@ function DashBoard() {
   const [isShowDataList, setIsShowDataList] = useState(false); 
   dayjs.extend(buddhistEra);
   dayjs.locale('th');
+
+  //Edit date attendance
+  const [isModalEditDateVisible, setIsModalEditDateVisible] = useState(false);
+  const [selectedDateAttendance, setSelectedDateAttendance] = useState('');
+  const [editingRecord, setEditingRecord] = useState(null);
+  const [selectedEditRow, setSelectedEditRow] = useState(null);
+
   const gotoFrom = "/dashboard";
   const formatDate = (date) => {
     if (!!date) {
@@ -133,14 +141,22 @@ function DashBoard() {
     setListData([]);
     dsbservice.getDataReport(data).then(res => {
       const { data, course } = res.data.data;
+      console.log(res.data.data);
       //add column header 
-      for (let i = 1; i <= course.number_of_sessions; i++) {
+      for (let i = 1; i <= 12; i++) {
         dynamicColumns.push({
           title: `ครั้งที่ ${i}`,
           dataIndex: `session_date_${i}`,
           key: `session_date_${i}`,
           align: `center`,
-          render: (date) => formatDate(date),
+          render: (date, record) => (
+            <span
+              style={{ cursor: 'pointer', color: 'blue' }}
+              onClick={() => handleEditDate(record, date, `session_date_${i}`)}
+            >
+              {formatDate(date)}
+            </span>
+          ),
         });
       }
       setIsShowDataList(true);
@@ -162,6 +178,30 @@ function DashBoard() {
       message.error("Request error!");
     });
   }
+
+  // ฟังก์ชันเมื่อคลิกเพื่อแก้ไขข้อมูล
+  const handleEditDate = (record, date, key) => {
+    console.log(record);
+    console.log(key);
+    //setSelectedDate(date);
+    setEditingRecord({ ...record, key });
+
+    debugger
+    setIsModalEditDateVisible(true);
+  };
+
+  // ฟังก์ชันบันทึกข้อมูลที่แก้ไข
+  const handleSaveDate = () => {
+    setDataSource((prev) =>
+      prev.map((item) =>
+        item.id === editingRecord.id
+          ? { ...item, [editingRecord.key]: selectedDate }
+          : item
+      )
+    );
+    setIsModalVisible(false);
+  };
+
   const handleClear = () => {
     form.resetFields();
     setListData([]);
@@ -180,7 +220,6 @@ function DashBoard() {
           last_payment_date: item.last_payment_date,
           price: item.price,
           student_code: item.student_code,
-          number_of_sessions: item.number_of_sessions,
           date_sessions: item.date_sessions
         };
       }
@@ -189,7 +228,7 @@ function DashBoard() {
     });
 
     return Object.values(result).map(student => {
-      for (let i = 1; i <= student.number_of_sessions; i++) {
+      for (let i = 1; i <= 12; i++) {
         if (!student[`session_date_${i}`]) {
           student[`session_date_${i}`] = null;
         }
@@ -263,7 +302,18 @@ function DashBoard() {
   return (
     <>
       <div className='layout-content px-3 sm:px-5 md:px-5'>
-
+      {/* Modal สำหรับแก้ไขข้อมูล */}
+        <Modal
+          title="แก้ไขข้อมูล"
+          visible={isModalEditDateVisible}
+          onOk={handleSaveDate}
+          onCancel={() => setIsModalEditDateVisible(false)}
+        >
+          <Input
+            value={selectedDateAttendance}
+            onChange={(e) => setSelectedDateAttendance(e.target.value)}
+          />
+        </Modal>
       
       <div className='drawer-dashboard'>
         {!selectedMenu && ListMenu}
@@ -396,11 +446,13 @@ function DashBoard() {
               </Col>
             </Row>
           </Card>
+          
         )}
       </div>
       {isShowDataList && (
         SectionBottom
       )}
+      
       </div>
     </>
 
