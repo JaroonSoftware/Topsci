@@ -141,6 +141,7 @@ function DashBoard() {
     setListData([]);
     dsbservice.getDataReport(data).then(res => {
       const { data, course } = res.data.data;
+      setSelectedEditRow(data);
       console.log(res.data.data);
       //add column header 
       for (let i = 1; i <= 12; i++) {
@@ -152,7 +153,7 @@ function DashBoard() {
           render: (date, record) => (
             <span
               style={{ cursor: 'pointer', color: 'blue' }}
-              onClick={() => handleEditDate(record, date, `session_date_${i}`)}
+              onClick={() => handleEditDate(record.student_code, course.course_id, i, date, `session_date_${i}`)}
             >
               {formatDate(date)}
             </span>
@@ -180,11 +181,14 @@ function DashBoard() {
   }
 
   // ฟังก์ชันเมื่อคลิกเพื่อแก้ไขข้อมูล
-  const handleEditDate = (record, date, key) => {
-    console.log(record);
+  const handleEditDate = (student_code, course_id, no, date, key) => {
+    console.log(student_code);
+    console.log(course_id);
+    console.log(no);
     console.log(key);
+    console.log(date);
     //setSelectedDate(date);
-    setEditingRecord({ ...record, key });
+    //setEditingRecord({ ...record, key });
 
     debugger
     setIsModalEditDateVisible(true);
@@ -192,14 +196,14 @@ function DashBoard() {
 
   // ฟังก์ชันบันทึกข้อมูลที่แก้ไข
   const handleSaveDate = () => {
-    setDataSource((prev) =>
-      prev.map((item) =>
-        item.id === editingRecord.id
-          ? { ...item, [editingRecord.key]: selectedDate }
-          : item
-      )
-    );
-    setIsModalVisible(false);
+    // setDataSource((prev) =>
+    //   prev.map((item) =>
+    //     item.id === editingRecord.id
+    //       ? { ...item, [editingRecord.key]: selectedDate }
+    //       : item
+    //   )
+    // );
+    // setIsModalVisible(false);
   };
 
   const handleClear = () => {

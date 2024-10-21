@@ -18,9 +18,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         st.nickname,
                         (select max(payment_date) from payments where course_id = c.course_id and student_code = st.student_code) as last_payment_date,
                         c.price,
+                        c.course_id,
                         c.course_name,
                         ss.session_no,
                         ss.session_date,
+                        att.attendance_id,
                         att.student_code,
                         ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) AS attendance_count,
                         CASE 
@@ -70,9 +72,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         st.nickname,
                         (select max(payment_date) from payments where course_id = c.course_id and student_code = st.student_code) as last_payment_date,
                         c.price,
+                        c.course_id,
                         c.course_name,
                         ss.session_no,
                         ss.session_date,
+                        att.attendance_id,
                         att.student_code,
                         ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) AS attendance_count,
                         CASE 
