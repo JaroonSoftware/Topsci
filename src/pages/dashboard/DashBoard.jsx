@@ -3,7 +3,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import CountUp from 'react-countup';
 import "./dashboard.css";
-import { Modal, Divider, Card, List, Flex, Row, Space, Typography, message, Table, Form, Col, Collapse, Select } from 'antd';
+import { Modal, Divider, Card, List, Flex, Row, Space, Typography, message, Table, Form, Col, Collapse, Select, DatePicker } from 'antd';
 import { Input, Button } from "antd";
 import dayjs from 'dayjs';
 import 'dayjs/locale/th';
@@ -43,7 +43,7 @@ function DashBoard() {
   const [isModalEditDateVisible, setIsModalEditDateVisible] = useState(false);
   const [selectedDateAttendance, setSelectedDateAttendance] = useState('');
   const [editingRecord, setEditingRecord] = useState(null);
-  const [selectedEditRow, setSelectedEditRow] = useState(null);
+  const [selectedEditRow, setSelectedEditRow] = useState([]);
 
   const gotoFrom = "/dashboard";
   const formatDate = (date) => {
@@ -137,12 +137,20 @@ function DashBoard() {
     })
   }
 
-  const getDataReport = (data) => {
+  const getDataReport = async (data) => {
     setListData([]);
-    dsbservice.getDataReport(data).then(res => {
+    await dsbservice.getDataReport(data).then(res => {
       const { data, course } = res.data.data;
-      setSelectedEditRow(data);
-      console.log(res.data.data);
+      const transformedData = data.map((item, index) => ({
+        studentCode: item.student_code,
+        studentName: item.name+' '+item.last_name,
+        courseId: course.course_id,
+        sessionDates: item.session_dates,
+        sessionNo: item.session_no,
+        attendanceId: item.attendance_id
+      }));
+      debugger
+      console.log(transformedData);
       //add column header 
       for (let i = 1; i <= 12; i++) {
         dynamicColumns.push({
@@ -173,7 +181,7 @@ function DashBoard() {
         }
       }
       setColumnReport(dynamicColumns); 
-
+      setSelectedEditRow(transformedData);
     }).catch(err => {
       console.log(err);
       message.error("Request error!");
@@ -182,15 +190,19 @@ function DashBoard() {
 
   // ฟังก์ชันเมื่อคลิกเพื่อแก้ไขข้อมูล
   const handleEditDate = (student_code, course_id, no, date, key) => {
-    console.log(student_code);
-    console.log(course_id);
-    console.log(no);
-    console.log(key);
-    console.log(date);
-    //setSelectedDate(date);
-    //setEditingRecord({ ...record, key });
-
+    // console.log(student_code);
+    // console.log(course_id);
+    // console.log(no);
+    // console.log(key);
+    // console.log(date);
     debugger
+    console.log(selectedEditRow);
+    debugger
+    const recordEdit = selectedEditRow.filter(v => v.student_code === student_code && v.course_id === course_id && v.session_no === no);
+    // console.log(selectedEditRow);
+    // console.log(test);
+    //setSelectedDate(date);
+    setEditingRecord(recordEdit);
     setIsModalEditDateVisible(true);
   };
 
@@ -306,17 +318,46 @@ function DashBoard() {
   return (
     <>
       <div className='layout-content px-3 sm:px-5 md:px-5'>
-      {/* Modal สำหรับแก้ไขข้อมูล */}
+      {/* Modal สำหรับแก้ไขข้อมูลเวลาเรียน */}
         <Modal
-          title="แก้ไขข้อมูล"
+          title="แก้ไขข้อมูลเวลาเรียน"
           visible={isModalEditDateVisible}
           onOk={handleSaveDate}
           onCancel={() => setIsModalEditDateVisible(false)}
         >
-          <Input
-            value={selectedDateAttendance}
-            onChange={(e) => setSelectedDateAttendance(e.target.value)}
-          />
+          {/* ฟิลด์กรอกคอร์สเรียน (disable) */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label>คอร์สเรียน:</label>
+            {/* <Input
+              value={editingRecord.course_name}
+              disabled
+            /> */}
+          </div>
+
+          {/* ฟิลด์กรอกชื่อ-นามสกุล (disable) */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label>ชื่อ-นามสกุล:</label>
+            {/* <Input
+              value={editingRecord.name+' '+editingRecord.last_name}
+              disabled
+            /> */}
+          </div>
+
+          {/* ฟิลด์กรอกเรียนครั้งที่ (disable) */}
+          <div style={{ marginBottom: '1rem' }}>
+            <label>เรียนครั้งที่:</label>
+            {/* <Input
+              value={editingRecord.session_no}
+              disabled
+            /> */}
+          </div>
+          <div style={{ marginBottom: '1rem' }}>
+            <label>เวลาเรียน:</label>
+            <DatePicker
+              value={selectedDateAttendance ? dayjs(selectedDateAttendance) : null}
+              onChange={(date, dateString) => setSelectedDateAttendance(dateString)}
+            />
+          </div>
         </Modal>
       
       <div className='drawer-dashboard'>
