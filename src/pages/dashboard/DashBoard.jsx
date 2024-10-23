@@ -1,6 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable react-hooks/exhaustive-deps */
-import React, { useEffect, useMemo, useState } from 'react';
+import React, { useEffect,  useRef, useState } from 'react';
 import CountUp from 'react-countup';
 import "./dashboard.css";
 import { Modal, Divider, Card, List, Flex, Row, Space, Typography, message, Table, Form, Col, Collapse, Select, DatePicker } from 'antd';
@@ -44,6 +44,20 @@ function DashBoard() {
   const [selectedDateAttendance, setSelectedDateAttendance] = useState('');
   const [editingRecord, setEditingRecord] = useState(null);
   const [selectedEditRow, setSelectedEditRow] = useState([]);
+
+  const selectedEditRowRef = useRef([]);
+  const editingRecordRef = useRef([]);
+
+  useEffect(() => {
+    selectedEditRowRef.current = selectedEditRow;
+  }, [selectedEditRow]);
+  
+
+//   useEffect(() => {
+//     if (editingRecord) { // Only trigger modal visibility when there is a valid record
+//         setIsModalEditDateVisible(true);
+//     }
+// }, [editingRecord]);
 
   const gotoFrom = "/dashboard";
   const formatDate = (date) => {
@@ -138,19 +152,21 @@ function DashBoard() {
   }
 
   const getDataReport = async (data) => {
+    debugger
     setListData([]);
     await dsbservice.getDataReport(data).then(res => {
       const { data, course } = res.data.data;
       const transformedData = data.map((item, index) => ({
         studentCode: item.student_code,
-        studentName: item.name+' '+item.last_name,
+        studentName: (item.name ? item.name : '') + ' ' + (item.last_name ? item.last_name : ''),
         courseId: course.course_id,
-        sessionDates: item.session_dates,
-        sessionNo: item.session_no,
+        courseName: course.course_name,
+        sessionDates: item.session_date,
+        attendanceNo: item.attendance_no,
         attendanceId: item.attendance_id
       }));
-      debugger
-      console.log(transformedData);
+      console.log(data);
+      setSelectedEditRow(transformedData); 
       //add column header 
       for (let i = 1; i <= 12; i++) {
         dynamicColumns.push({
@@ -163,7 +179,7 @@ function DashBoard() {
               style={{ cursor: 'pointer', color: 'blue' }}
               onClick={() => handleEditDate(record.student_code, course.course_id, i, date, `session_date_${i}`)}
             >
-              {formatDate(date)}
+              {formatDate(date)}{console.log(record)}
             </span>
           ),
         });
@@ -181,7 +197,7 @@ function DashBoard() {
         }
       }
       setColumnReport(dynamicColumns); 
-      setSelectedEditRow(transformedData);
+      console.log(dynamicColumns);
     }).catch(err => {
       console.log(err);
       message.error("Request error!");
@@ -190,20 +206,23 @@ function DashBoard() {
 
   // ฟังก์ชันเมื่อคลิกเพื่อแก้ไขข้อมูล
   const handleEditDate = (student_code, course_id, no, date, key) => {
-    // console.log(student_code);
-    // console.log(course_id);
-    // console.log(no);
-    // console.log(key);
-    // console.log(date);
+    setEditingRecord([]);
+    console.log(student_code);
+    console.log(course_id);
+    console.log(no);
+    console.log(key);
+    console.log(date);
+    
+    //console.log(selectedEditRowRef.current);
     debugger
-    console.log(selectedEditRow);
-    debugger
-    const recordEdit = selectedEditRow.filter(v => v.student_code === student_code && v.course_id === course_id && v.session_no === no);
+    const recordEdit = selectedEditRowRef.current.find(v => v.studentCode === student_code && v.courseId === course_id && v.attendanceNo === no);
+    console.log('data =', recordEdit);
     // console.log(selectedEditRow);
     // console.log(test);
     //setSelectedDate(date);
     setEditingRecord(recordEdit);
     setIsModalEditDateVisible(true);
+    //setIsModalEditDateVisible(true);
   };
 
   // ฟังก์ชันบันทึกข้อมูลที่แก้ไข
@@ -233,6 +252,7 @@ function DashBoard() {
           name: item.name,
           last_name: item.last_name,
           nickname: item.nickname,
+          attendance_no: item.attendance_no,
           last_payment_date: item.last_payment_date,
           price: item.price,
           student_code: item.student_code,
@@ -240,7 +260,7 @@ function DashBoard() {
         };
       }
 
-      result[studentKey][`session_date_${item.attendance_count}`] = item.session_date;
+      result[studentKey][`session_date_${item.attendance_no}`] = item.session_date;
     });
 
     return Object.values(result).map(student => {
@@ -327,7 +347,8 @@ function DashBoard() {
         >
           {/* ฟิลด์กรอกคอร์สเรียน (disable) */}
           <div style={{ marginBottom: '1rem' }}>
-            <label>คอร์สเรียน:</label>
+            <label>คอร์สเรียน :</label>
+            <label style={{ marginLeft: '15px' }}>{editingRecord ? editingRecord.courseName : 'Loading...'}</label>
             {/* <Input
               value={editingRecord.course_name}
               disabled
@@ -336,7 +357,8 @@ function DashBoard() {
 
           {/* ฟิลด์กรอกชื่อ-นามสกุล (disable) */}
           <div style={{ marginBottom: '1rem' }}>
-            <label>ชื่อ-นามสกุล:</label>
+            <label>ชื่อ-นามสกุล :</label>
+            <label style={{ marginLeft: '15px' }}>{editingRecord ? editingRecord.studentName : 'Loading...'}</label>
             {/* <Input
               value={editingRecord.name+' '+editingRecord.last_name}
               disabled
@@ -346,6 +368,7 @@ function DashBoard() {
           {/* ฟิลด์กรอกเรียนครั้งที่ (disable) */}
           <div style={{ marginBottom: '1rem' }}>
             <label>เรียนครั้งที่:</label>
+            <label style={{ marginLeft: '15px' }}>{editingRecord ? editingRecord.attendanceNo : 'Loading...'}</label>
             {/* <Input
               value={editingRecord.session_no}
               disabled
@@ -354,7 +377,8 @@ function DashBoard() {
           <div style={{ marginBottom: '1rem' }}>
             <label>เวลาเรียน:</label>
             <DatePicker
-              value={selectedDateAttendance ? dayjs(selectedDateAttendance) : null}
+              style={{ marginLeft: '15px' }}
+              value={editingRecord ? dayjs(editingRecord.sessionDates) : null}
               onChange={(date, dateString) => setSelectedDateAttendance(dateString)}
             />
           </div>

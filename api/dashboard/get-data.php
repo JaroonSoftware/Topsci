@@ -20,13 +20,12 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         c.price,
                         c.course_id,
                         c.course_name,
-                        ss.session_no,
-                        ss.session_date,
+                        att.attendance_no,
+                        att.attendance_date as session_date,
                         att.attendance_id,
                         att.student_code,
-                        ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) AS attendance_count,
                         CASE 
-                            WHEN ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) = 1 THEN ss.session_date
+                            WHEN att.attendance_no = 1 THEN att.attendance_date
                             ELSE NULL
                         END AS date_sessions
                     FROM 
