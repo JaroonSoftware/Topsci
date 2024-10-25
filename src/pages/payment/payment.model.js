@@ -147,7 +147,6 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
           console.error("เกิดข้อผิดพลาด: ", error);
         }
       };
-      if (record.last_sessions < record.number_of_payment) {
         return (
           <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
@@ -180,32 +179,6 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
             </Tooltip>
           </span>
         )
-      }else{
-        return (
-          <span>
-            <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
-              <Button
-                type="primary" ghost
-                icon={<FileSearchOutlined  />}
-                className="checking-button"
-                onClick={(e) => handleDetailPayment(record.student_code)}
-                size="small"
-              />
-            </Tooltip>
-            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
-              <Button
-                type="primary" ghost
-                className="checking-button"
-                onClick={handlePrint} // เรียกฟังก์ชันเพื่อพิมพ์
-                size="small"
-              >
-                ปริ้นใบเสร็จ
-              </Button>
-            </Tooltip>
-            {' '}
-          </span>
-        )
-      }
     },
   }, 
 ];
