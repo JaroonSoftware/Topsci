@@ -15,6 +15,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
         $stmt->execute();
         $courses = $stmt->fetchAll(PDO::FETCH_ASSOC);
 
+        $sql_student = "SELECT s.student_code as value,CONCAT(IFNULL(s.firstname, ''), ' ', IFNULL(s.lastname, '')) AS label
+                FROM attendance att 
+                LEFT JOIN student s on att.student_code = s.student_code
+                GROUP by  s.student_code";
+        $stmt = $conn->prepare($sql_student); 
+        $stmt->execute();
+        $student = $stmt->fetchAll(PDO::FETCH_ASSOC);
+
         http_response_code(200);
         echo json_encode(array('status' => 1, 'data' => array( "courses" => $courses, "student" => $student )));
     } catch (mysqli_sql_exception $e) { 

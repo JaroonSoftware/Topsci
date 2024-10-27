@@ -3,6 +3,7 @@ const API_URL = {
   API_MANAGE: `/payment/manage.php`, 
   API_GETMASTER: `/payment/search.php`,
   API_GETPAYMENT: `/payment/get-payment.php`, 
+  API_GETPRINT: `/payment/get-data-print.php`, 
 };
   
 const PaymentService = () => { 
@@ -12,12 +13,14 @@ const PaymentService = () => {
   const search = (parm = {}) => api.post(`${API_URL.API_GETMASTER}`, parm);
   const addPayment = (parm = {}) => api.post(`${API_URL.API_MANAGE}`, parm);
   const updatePayment = (parm = {}) => api.put(`${API_URL.API_MANAGE}`, parm);
+  const getDataPrint = (parm = {}) => api.post(`${API_URL.API_GETPRINT}`, parm);
   return {
     getListPaymentDetail,
     get, 
     search,
     addPayment,
     updatePayment,
+    getDataPrint,
   };
 };
 

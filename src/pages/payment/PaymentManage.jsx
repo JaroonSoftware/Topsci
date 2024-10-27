@@ -38,12 +38,12 @@ function PaymentManage() {
 
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
-  const [formListPaymeny] = Form.useForm();
+  const [formListPayment] = Form.useForm();
   const [formAddPaymeny] = Form.useForm();
   const [openModalListPayment , setOpenModalListPaymen] = useState(false);
   const [openModalAddPayment , setOpenModalAddPaymen] = useState(false);
   const [loading,  setLoading] = useState(true);
-  const [formEditPaymeny] = Form.useForm();
+  const [formEditPayment] = Form.useForm();
   
 
   /** Detail Data State */
@@ -157,7 +157,7 @@ function PaymentManage() {
           setItemsData(data.data); 
           setListDataPayment(data.data);
           setDataSourceEditPayment(data.data);
-          formListPaymeny.setFieldsValue({ student_name: student.student_name });
+          formListPayment.setFieldsValue({ student_name: student.student_name });
         }
       })
       .catch((err) => {
@@ -174,10 +174,11 @@ function PaymentManage() {
   const isEditing = (record) => record.payment_id === editingKey;
 
   const edit = (record) => {
-    formEditPaymeny.setFieldsValue({
+    formEditPayment.setFieldsValue({
       ...record,
       payment_date: (record.payment_date) ? dayjs(record.payment_date) : ""
    });
+   console.log('id =',record.payment_id)
     setEditingKey(record.payment_id);
   };
 
@@ -188,13 +189,14 @@ function PaymentManage() {
 
   const save = async (key) => {
     try {
-      const row = await formEditPaymeny.validateFields(); 
+      const row = await formEditPayment.validateFields(); 
       const newData = [...dataSourceEditPayment];
-      const index = newData.findIndex((item) => key === item.key);
-  
+      const index = newData.findIndex((item) => item.payment_id === editingKey);
       if (index > -1) {
-        const item = newData[index];
+        const item = newData.find((item) => item.payment_id === editingKey);
+        //console.log('item=',item);
         const payment = {...item,...row};
+        //console.log('payment=',payment);
         // newData.splice(index, 1, { ...item, ...row }); 
         // setDataSourceEditPayment(newData);
         // setEditingKey("");
@@ -387,7 +389,7 @@ function PaymentManage() {
     </Space>
   )
   const handleCloseModalListPayment = () => {
-    formListPaymeny.resetFields();
+    formListPayment.resetFields();
     setOpenModalListPaymen(false);
   };
   
@@ -445,7 +447,7 @@ function PaymentManage() {
             <Spin spinning={loading}>
                 <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative'}}  >
                     <Card style={{backgroundColor:'#f0f0f0' }}>
-                        <Form form={formListPaymeny} layout="vertical" autoComplete="off" >
+                        <Form form={formListPayment} layout="vertical" autoComplete="off" >
                             <Row gutter={[{xs:32, sm:32, md:32, lg:12, xl:12}, 8]} className='m-0'>
                               <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                                   <Form.Item
@@ -458,7 +460,7 @@ function PaymentManage() {
                             </Row> 
                         </Form>
                     </Card>
-                      <Form form={formEditPaymeny} component={false}>
+                      <Form form={formEditPayment} component={false}>
                         <Table  
                             components={{
                               body: {

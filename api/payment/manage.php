@@ -95,7 +95,7 @@ try {
         }
         $courses = $stmt->fetch(PDO::FETCH_ASSOC);
 
-        $sql = "select s.student_code,CONCAT_WS(' ',s.firstname,s.lastname) as student_name,s.degree,s.school,
+        $sql = "select s.student_code,CONCAT_WS(' ',s.firstname,s.lastname) as student_name,s.degree,s.school,c.course_id,
             CASE 
                 WHEN EXISTS (SELECT 1 FROM sessions ss join attendance at on ss.session_id = at.session_id where ss.course_id = c.course_id and at.student_code = cs.student_code ) 
                 THEN 'Y'

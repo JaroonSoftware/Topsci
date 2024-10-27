@@ -1,16 +1,19 @@
-import { Button, Popconfirm, Space, Badge, Switch, Form, Input } from "antd"; 
+import { Button, Popconfirm,  message, Badge, Switch, Form, Input } from "antd"; 
 import "../../assets/styles/banks.css";
 import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
+import { FaPrint } from "react-icons/fa6";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { DollarOutlined, FileSearchOutlined } from '@ant-design/icons';
 import BillPDF from './BillPDF';
 import { pdf } from '@react-pdf/renderer'; // ใช้ pdf() ในการสร้าง Blob จาก PDF
+import PaymentService from "../../service/Payment.service";
 
 /** export component for edit table */
 export const componentsEditable = {
   body: { row: EditableRow, cell: EditableCell },
 };
+const paymentservice = PaymentService();
 
 /** get sample column */
 export const accessColumn = ({handleListPayment}) => [
@@ -123,8 +126,12 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     render: (text, record) => {
       const handlePrint = async () => {
         try {
-          // สร้าง Blob จาก BillPDF
-          const blob = await pdf(<BillPDF />).toBlob(); 
+          const res = await paymentservice
+          .getDataPrint({ student: record.student_code, couses: record.course_id })
+          .catch((error) => message.error("get data fail."));
+          //console.log(res.data.data);
+          const dataPrint = res.data.data;
+          const blob = await pdf(<BillPDF data={dataPrint}  />).toBlob(); 
           
           // ตรวจสอบ Blob ที่ถูกสร้าง
           if (!blob) {
@@ -171,10 +178,10 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
               <Button
                 type="primary" ghost
                 className="checking-button"
+                icon={<FaPrint />}
                 onClick={handlePrint} // เรียกฟังก์ชันเพื่อพิมพ์
                 size="small"
               >
-                ปริ้นใบเสร็จ
               </Button>
             </Tooltip>
           </span>
