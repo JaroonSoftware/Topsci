@@ -171,6 +171,16 @@ try {
                     $error = $conn->errorInfo();
                     throw new PDOException("Insert data courses_student error => $error");
                 }
+            }else {
+                $sqlUpdateStatus = "UPDATE courses_student SET is_delete = 'N' WHERE course_id = :course_id AND student_code = :student_code AND is_delete = 'Y'";
+                $stmtUpdateStatus = $conn->prepare($sqlUpdateStatus);
+                $stmtUpdateStatus->bindParam(":course_id", $courseId, PDO::PARAM_STR);
+                $stmtUpdateStatus->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
+                
+                if (!$stmtUpdateStatus->execute()) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Update status error => $error");
+                }
             }
         }
 
