@@ -38,19 +38,11 @@ export const accessColumn = ({handleCheck}) => [
     sorter: (a, b) => (a.study_time).localeCompare(b.study_time),
   },
   {
-    title: "จำนวนรอบเรียน",
-    dataIndex: "number_of_sessions",
-    key: "number_of_sessions", 
+    title: "รอบเรียน",
+    dataIndex: "session_count",
+    key: "session_count", 
     align: "right",
     width: 80,
-    render: (text, record) => {
-      if (record.session_count === record.number_of_sessions) {
-        return <Badge count={record.session_count+'/'+record.number_of_sessions} className="badge-success" />;
-      }else{
-        return <Badge count={record.session_count+'/'+record.number_of_sessions} className="badge-warning" />;
-      }
-      return null; // หรือสามารถแสดงข้อความอื่น หรือเว้นว่างไว้
-    },
   },
   { 
     title: "จำนวนนักเรียน",
@@ -66,7 +58,6 @@ export const accessColumn = ({handleCheck}) => [
     align: "center",
     width: 100,
     render: (text, record) => {
-      if (record.session_count < record.number_of_sessions) {
       return <Space>
               <Button
                 type="primary" ghost
@@ -76,7 +67,6 @@ export const accessColumn = ({handleCheck}) => [
                 size="small"
               />
             </Space>
-      }
     },
   }, 
 ];

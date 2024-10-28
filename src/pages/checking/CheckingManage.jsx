@@ -92,7 +92,10 @@ function CheckingManage() {
     form
       .validateFields()
       .then((v) => {
-        const courses = { ...formDetail, ...v }
+        const formattedDate = v.session_date 
+          ? dayjs(v.session_date).format('YYYY-MM-DD') 
+          : null;
+        const courses = { ...formDetail, ...v, session_date: formattedDate }
         const student = {...listStudent};
 
         const parm = { courses, student  };
@@ -149,6 +152,10 @@ function CheckingManage() {
     const updatedStudents = listStudent.map(s => s.student_code === student.student_code ? { ...s, reason: e.target.value } : s);
     setListStudent(updatedStudents);
   };
+  const handleDateChange = (date, dateString) => {
+    // แสดง alert ค่าวันที่ในรูปแบบ string ที่ได้รับจาก DatePicker
+    alert(`Selected Date: ${dateString}`);
+  };
 
   /** setting column table */
   //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
@@ -204,6 +211,7 @@ function CheckingManage() {
                 <DatePicker  
                   placeholder="วันที่เรียน"
                   style={{width:'100%', height:40}} 
+                  //onChange={handleDateChange}
                 />
             </Form.Item>
       </Col>

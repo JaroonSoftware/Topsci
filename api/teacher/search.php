@@ -11,8 +11,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     extract($_POST, EXTR_OVERWRITE, "_");
 
     $mysecrch = "";
-    $mysecrch .= !empty($first_name) ? " and a.first_name like '%$firstname%' " : " ";
-    $mysecrch .= !empty($last_name) ? " and a.last_name like '%$lastname%' " : " ";
+    $mysecrch .= !empty($first_name) ? " and a.first_name like '%$first_name%' " : " ";
+    $mysecrch .= !empty($last_name) ? " and a.last_name like '%$last_name%' " : " ";
     $mysecrch .= !empty($phone_number) ? " and a.phone_number like '%$phone_number%' " : " ";
     
     try {

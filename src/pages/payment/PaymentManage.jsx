@@ -38,11 +38,12 @@ function PaymentManage() {
 
   const { config } = location.state || { config: null };
   const [form] = Form.useForm();
-  const [formListPaymeny] = Form.useForm();
+  const [formListPayment] = Form.useForm();
   const [formAddPaymeny] = Form.useForm();
   const [openModalListPayment , setOpenModalListPaymen] = useState(false);
   const [openModalAddPayment , setOpenModalAddPaymen] = useState(false);
   const [loading,  setLoading] = useState(true);
+  const [formEditPayment] = Form.useForm();
   
 
   /** Detail Data State */
@@ -53,6 +54,10 @@ function PaymentManage() {
   const [selectedCouses, setSelectedCouses] = useState(null);
   const [itemsData, setItemsData] = useState([]);
   const [listDataPayment, setListDataPayment] = useState([]);
+
+
+  const [dataSourceEditPayment, setDataSourceEditPayment] = useState([]);
+  const [editingKey, setEditingKey] = useState("");
 
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
@@ -104,7 +109,6 @@ function PaymentManage() {
         };
 
         const parm = { payment };
-        //console.log(parm);
         const actions = paymentservice.addPayment;
         actions(parm)
           .then((r) => {
@@ -150,26 +154,145 @@ function PaymentManage() {
       .then((res) => {
         const { status, data } = res;
         if (status === 200) {
-          setItemsData(data.data); // ตั้งค่า items
-          setListDataPayment(data.data); // ตั้งค่ารายการการชำระเงิน
-          formListPaymeny.setFieldsValue({ student_name: student.student_name });
-          debugger
+          setItemsData(data.data); 
+          setListDataPayment(data.data);
+          setDataSourceEditPayment(data.data);
+          formListPayment.setFieldsValue({ student_name: student.student_name });
         }
       })
       .catch((err) => {
-        message.error("Request error!"); // แสดงข้อความ error หากเกิดปัญหา
+        message.error("Request error!");
       })
       .finally(() => {
-        // ใช้ setTimeout เพื่อ delay ก่อนเปลี่ยนสถานะ loading และเปิด modal
         setTimeout(() => {
-          setLoading(false); // ปิดการแสดง loading
-          setOpenModalListPaymen(true); // เปิด modal
-        }, 400); // 400ms delay
+          setLoading(false); 
+          setOpenModalListPaymen(true); 
+        }, 400); 
       });
   };
 
-  /** setting column table */
-  //const prodcolumns = columnsParametersEditable(handleEditCell,unitOption, { handleRemove});
+  const isEditing = (record) => record.payment_id === editingKey;
+
+  const edit = (record) => {
+    formEditPayment.setFieldsValue({
+      ...record,
+      payment_date: (record.payment_date) ? dayjs(record.payment_date) : ""
+   });
+   console.log('id =',record.payment_id)
+    setEditingKey(record.payment_id);
+  };
+
+
+  const cancel = () => {
+    setEditingKey("");
+  };
+
+  const save = async (key) => {
+    try {
+      const row = await formEditPayment.validateFields(); 
+      const newData = [...dataSourceEditPayment];
+      const index = newData.findIndex((item) => item.payment_id === editingKey);
+      if (index > -1) {
+        const item = newData.find((item) => item.payment_id === editingKey);
+        //console.log('item=',item);
+        const payment = {...item,...row};
+        //console.log('payment=',payment);
+        // newData.splice(index, 1, { ...item, ...row }); 
+        // setDataSourceEditPayment(newData);
+        // setEditingKey("");
+        const parm = payment;
+        const actions = paymentservice.updatePayment;
+        actions(parm)
+          .then((r) => {
+              message.success("บันทึกข้อมูลสำเร็จ.");
+              newData.splice(index, 1, { ...item, ...row }); 
+              setDataSourceEditPayment(newData);
+              setEditingKey("");
+              Search();
+          })
+          .catch((err) => {
+            message.error("บันทึกข้อมูลไม่สำเร็จ.");
+            console.warn(err);
+          });
+      }
+    } catch (errInfo) {
+      console.log("Validate Failed:", errInfo);
+    }
+  };
+
+  const mergedColumns = listPaymentDetailColumn(isEditing, edit, save, cancel, editingKey).map((col) => {
+    if (!col.editable) {
+      return col;
+    }
+
+    return {
+      ...col,
+      onCell: (record) => ({
+        record,
+        inputType: col.inputType,  
+        dataIndex: col.dataIndex,
+        title: col.title,
+        editing: isEditing(record),
+      }),
+    };
+  });
+
+  const EditableCell = ({
+    editing,
+    dataIndex,
+    title,
+    inputType,
+    record,
+    index,
+    children,
+    ...restProps
+  }) => {
+    let inputNode;
+
+    if (inputType === "number") {
+      inputNode = <InputNumber />;
+    } else if (inputType === "date") {
+
+      inputNode = (
+        <DatePicker formate="DD-MM-YYYY" />
+      );
+    } else if (inputType === "select") {
+      inputNode = (
+        <Select
+          style={{width:'100%', height:40}}
+          options={[
+            { value: 'เงินสด', label: 'เงินสด' },
+            { value: 'โอนผ่านบัญชีธนาคาร', label: 'โอนผ่านบัญชีธนาคาร' },
+          ]}
+        />
+      );
+    } else {
+      inputNode = <Input />;
+    }
+  
+    return (
+      <td {...restProps}>
+        {editing ? (
+          <Form.Item
+            name={dataIndex}
+            style={{ margin: 0 }}
+            rules={[
+              {
+                required: true,
+                message: `Please Input ${title}!`,
+              },
+            ]}
+          >
+            {inputNode}
+          </Form.Item>
+        ) : (
+          children
+        )}
+      </td>
+    );
+  };
+
+
   const columnstudent = studentColumn( listStudent, handleDetailPayment, handleAddPayment );
   const columnlistpayment = listPaymentDetailColumn();
   const SectionCourses = (
@@ -266,7 +389,7 @@ function PaymentManage() {
     </Space>
   )
   const handleCloseModalListPayment = () => {
-    formListPaymeny.resetFields();
+    formListPayment.resetFields();
     setOpenModalListPaymen(false);
   };
   
@@ -324,7 +447,7 @@ function PaymentManage() {
             <Spin spinning={loading}>
                 <Space direction="vertical" size="middle" style={{ display: 'flex', position: 'relative'}}  >
                     <Card style={{backgroundColor:'#f0f0f0' }}>
-                        <Form form={formListPaymeny} layout="vertical" autoComplete="off" >
+                        <Form form={formListPayment} layout="vertical" autoComplete="off" >
                             <Row gutter={[{xs:32, sm:32, md:32, lg:12, xl:12}, 8]} className='m-0'>
                               <Col xs={24} sm={24} md={24} lg={24} xl={24} xxl={24}>
                                   <Form.Item
@@ -337,10 +460,17 @@ function PaymentManage() {
                             </Row> 
                         </Form>
                     </Card>
+                      <Form form={formEditPayment} component={false}>
                         <Table  
+                            components={{
+                              body: {
+                                cell: EditableCell,
+                              },
+                            }}
                             bordered
-                            dataSource={listDataPayment}
-                            columns={columnlistpayment} 
+                            dataSource={dataSourceEditPayment}
+                            rowKey="payment_id"
+                            columns={mergedColumns} 
                             pagination={{ 
                                 total:listDataPayment.length, 
                                 showTotal:(_, range) => `${range[0]}-${range[1]} of ${itemsData.length} items`,
@@ -349,6 +479,7 @@ function PaymentManage() {
                             }}
                             scroll={{ x: 'max-content' }} size='small'
                         /> 
+                      </Form>
                 </Space>                
             </Spin> 
         </Modal>    

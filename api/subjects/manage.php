@@ -41,42 +41,52 @@ try {
         $rest_json = file_get_contents("php://input");
         $_PUT = json_decode($rest_json, true);
         extract($_PUT, EXTR_OVERWRITE, "_");
-        // var_dump($_POST);
 
+        // ตรวจสอบว่ามี subject_name ซ้ำในระบบหรือไม่ ยกเว้นสำหรับรายการปัจจุบัน
+        $checkQuery = "SELECT COUNT(*) FROM subjects WHERE subject_name = :subject_name AND subject_id != :subject_id";
+        $checkStmt = $conn->prepare($checkQuery);
+        $checkStmt->bindParam(':subject_name', $subject_name, PDO::PARAM_STR);
+        $checkStmt->bindParam(':subject_id', $subject_id, PDO::PARAM_INT);
+        $checkStmt->execute();
+        if ($checkStmt->fetchColumn() > 0) {
+            http_response_code(409); // Conflict status
+            echo json_encode(['message' => 'ชื่อวิชา '.$subject_name.' มีแล้วในระบบ.']);
+            exit;
+        }
+
+        // เตรียมคำสั่ง SQL สำหรับอัปเดตข้อมูล
         $sql = "
-        update subjects 
-        set
-        subject_name = :subject_name,
-        description = :description,
-        updated_date = :updated_date,
-        updated_by = :updated_by
-        where subject_id = :subject_id";
+            UPDATE subjects 
+            SET
+                subject_name = :subject_name,
+                description = :description,
+                updated_date = :updated_date,
+                updated_by = :updated_by
+            WHERE subject_id = :subject_id";
 
-        
         $stmt = $conn->prepare($sql);
         if (!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}");
 
-        $stmt->bindParam(":subject_id", $teacher_id, PDO::PARAM_STR);
+        $stmt->bindParam(":subject_id", $subject_id, PDO::PARAM_INT);
         $stmt->bindParam(":subject_name", $subject_name, PDO::PARAM_STR);
         $stmt->bindParam(":description", $description, PDO::PARAM_STR);
-        $stmt->bindParam(":updated_date", $action_date, PDO::PARAM_STR);    
-        $stmt->bindParam(":updated_by", $action_user, PDO::PARAM_INT);        
-
+        $stmt->bindParam(":updated_date", $updated_date, PDO::PARAM_STR);
+        $stmt->bindParam(":updated_by", $updated_by, PDO::PARAM_INT);
 
         if (!$stmt->execute()) {
             $error = $conn->errorInfo();
-            throw new PDOException("Update data error => $error");
-            die;
+            throw new PDOException("Update data error => $error[2]");
+            exit;
         }
 
         $conn->commit();
         http_response_code(200);
-        echo json_encode(array("data" => array("id" => $_PUT)));
+        echo json_encode(array("data" => array("updated_date" => $updated_date)));
     } else  if ($_SERVER["REQUEST_METHOD"] == "GET") {
         $code = $_GET["code"];
         $sql = " SELECT a.* ";
         $sql .= " FROM `subjects` as a ";
-        $sql .= " where subjects  = :code";
+        $sql .= " where subject_id  = :code";
 
         $stmt = $conn->prepare($sql);
         if (!$stmt->execute(['code' => $code])) {

@@ -1,14 +1,19 @@
-import { Button, Popconfirm, Space, Badge, Switch, Form, Input } from "antd"; 
+import { Button, Popconfirm,  message, Badge, Switch, Form, Input } from "antd"; 
 import "../../assets/styles/banks.css";
 import { Tooltip } from "antd";
 // import { EditOutlined, QuestionCircleOutlined, DeleteOutlined } from "@ant-design/icons"; 
+import { FaPrint } from "react-icons/fa6";
 import { EditableRow, EditableCell } from "../../components/table/TableEditAble";
 import { DollarOutlined, FileSearchOutlined } from '@ant-design/icons';
+import BillPDF from './BillPDF';
+import { pdf } from '@react-pdf/renderer'; // ใช้ pdf() ในการสร้าง Blob จาก PDF
+import PaymentService from "../../service/Payment.service";
 
 /** export component for edit table */
 export const componentsEditable = {
   body: { row: EditableRow, cell: EditableCell },
 };
+const paymentservice = PaymentService();
 
 /** get sample column */
 export const accessColumn = ({handleListPayment}) => [
@@ -119,7 +124,36 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     align: "center",
     width: 120,
     render: (text, record) => {
-      if (record.last_sessions < record.number_of_sessions) {
+      const handlePrint = async () => {
+        try {
+          const res = await paymentservice
+          .getDataPrint({ student: record.student_code, couses: record.course_id })
+          .catch((error) => message.error("get data fail."));
+          //console.log(res.data.data);
+          const dataPrint = res.data.data;
+          const blob = await pdf(<BillPDF data={dataPrint}  />).toBlob(); 
+          
+          // ตรวจสอบ Blob ที่ถูกสร้าง
+          if (!blob) {
+            console.error("Blob ไม่ถูกสร้าง");
+            return;
+          }
+      
+          const url = URL.createObjectURL(blob);
+      
+          // เปิดแท็บใหม่และสั่งพิมพ์จากแท็บใหม่แทนการใช้ iframe
+          const newWindow = window.open(url);
+          if (newWindow) {
+            newWindow.onload = () => {
+              newWindow.print();
+            };
+          } else {
+            console.error("ไม่สามารถเปิดแท็บใหม่ได้");
+          }
+        } catch (error) {
+          console.error("เกิดข้อผิดพลาด: ", error);
+        }
+      };
         return (
           <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
@@ -140,32 +174,28 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                   size="small"
                 />
             </Tooltip>
-          </span>
-        )
-      }else{
-        return (
-          <span>
-            <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
+            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
               <Button
                 type="primary" ghost
-                icon={<FileSearchOutlined  />}
                 className="checking-button"
-                onClick={(e) => handleDetailPayment(record.student_code)}
+                icon={<FaPrint />}
+                onClick={handlePrint} // เรียกฟังก์ชันเพื่อพิมพ์
                 size="small"
-              />
+              >
+              </Button>
             </Tooltip>
-            {' '}
           </span>
         )
-      }
     },
   }, 
 ];
-export const listPaymentDetailColumn = () => [
+export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKey) => [
     {
       title: "วันที่ชำระเงิน",
       key: "payment_date",
       dataIndex: "payment_date",
+      editable: true,
+      inputType: "date",
       render: (text) => {
         const date = new Date(text);
         const formattedDate = `${date.getDate()}/${date.getMonth() + 1}/${date.getFullYear()}`;
@@ -176,10 +206,44 @@ export const listPaymentDetailColumn = () => [
       title: "จำนวนเงิน",
       dataIndex: "amount_paid",
       key: "amount_paid",
+      editable: true,
+      inputType: "number",
     },
     {
       title: "วิธีการชำระเงิน",
       dataIndex: "payment_method",
       key: "payment_method",
+      editable: true,
+      inputType: "select",
     },
-];
+    {
+      title: "Operation",
+      dataIndex: "operation",
+      render: (_, record) => {
+        const editable = isEditing(record);
+        return editable ? (
+          <span>
+            <Tooltip placement="topLeft" title={'แก้ไขการชำระเงิน'}>
+              <Button
+                onClick={(e) => save(record.key)}
+                size="small"
+              >
+                Save
+              </Button>
+            </Tooltip>
+            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+              <Button type="link" size="small">Cancel</Button>
+            </Popconfirm>
+          </span>
+        ) : (
+          <Button
+            disabled={editingKey !== ""}
+            size="small"
+            onClick={() => edit(record)}
+          >
+            Edit
+          </Button>
+        );
+      },
+    },
+  ];

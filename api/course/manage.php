@@ -19,8 +19,8 @@ try {
 
         // var_dump($_POST);
         $sql = "insert courses (`subject_id`, `course_name`, `price`,
-        `time_from`, `time_to`, `number_of_sessions`, `created_by`) 
-        values (:subject_id,:course_name,:price,:time_from,:time_to,:number_of_sessions,:action_user)";
+        `time_from`, `time_to`, `number_of_payment`, `created_by`) 
+        values (:subject_id,:course_name,:price,:time_from,:time_to,:number_of_payment,:action_user)";
 
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Insert data error => {$conn->errorInfo()}"); 
@@ -31,7 +31,7 @@ try {
         $stmt->bindParam(":price", $courses->price, PDO::PARAM_STR);
         $stmt->bindParam(":time_from", $courses->timefrom, PDO::PARAM_STR);
         $stmt->bindParam(":time_to", $courses->timeto, PDO::PARAM_STR);
-        $stmt->bindParam(":number_of_sessions", $courses->number_of_sessions, PDO::PARAM_STR);
+        $stmt->bindParam(":number_of_payment", $courses->number_of_payment, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR); 
 
         if(!$stmt->execute()) {
@@ -94,7 +94,7 @@ try {
         price = :price,
         time_from = :time_from,
         time_to = :time_to,
-        number_of_sessions = :number_of_sessions,
+        number_of_payment = :number_of_payment,
         updated_date = CURRENT_TIMESTAMP(),
         updated_by = :action_user
         where course_id = :course_id";
@@ -109,7 +109,7 @@ try {
         $stmt->bindParam(":price", $courses->price, PDO::PARAM_STR);
         $stmt->bindParam(":time_from", $courses->timefrom, PDO::PARAM_STR);
         $stmt->bindParam(":time_to", $courses->timeto, PDO::PARAM_STR);
-        $stmt->bindParam(":number_of_sessions", $courses->number_of_sessions, PDO::PARAM_STR); 
+        $stmt->bindParam(":number_of_payment", $courses->number_of_payment, PDO::PARAM_STR); 
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_INT);  
         $stmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_STR); 
 
@@ -143,54 +143,57 @@ try {
                 throw new PDOException("Insert data error => $error"); 
             }
         } 
-
-        $sql = "delete from courses_student where course_id = :course_id";
+        //Insert & Update Courses Student
+        // สร้างรายการ student_code ทั้งหมดที่อยู่ใน courses_student ปัจจุบัน
+        $sql = "SELECT student_code FROM courses_student WHERE course_id = :course_id";
         $stmt = $conn->prepare($sql);
-        if (!$stmt->execute([ 'course_id' => $courses->course_id ])){
-            $error = $conn->errorInfo();
-            throw new PDOException("Remove data error => $error");
-        }
-        //Insert Courses Student
-        $sql = "insert into courses_student (course_id,student_code)
-        values (:course_id,:student_code)";
-        $stmt = $conn->prepare($sql);
-        if(!$stmt) throw new PDOException("Insert courses student data error => {$conn->errorInfo()}");
+        $stmt->bindParam(":course_id", $courseId, PDO::PARAM_STR);
+        $stmt->execute();
+        
+        // ดึงข้อมูลทั้งหมดมาเก็บไว้ใน array
+        $existingStudents = $stmt->fetchAll(PDO::FETCH_COLUMN);
 
-        foreach( $student as $ind => $val){
+        // สร้าง array ของ student_code ที่มาจาก input ($student)
+        $inputStudents = array_column($student, 'student_code');
+
+        // วนลูปเพื่อเช็คว่าใน $student มี student_code ที่ยังไม่มีในฐานข้อมูล
+        foreach($student as $ind => $val){
             $val = (object)$val;
-            $stmt->bindParam(":course_id", $courseId, PDO::PARAM_STR);
-            $stmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
             
-            if(!$stmt->execute()) {
-                $error = $conn->errorInfo();
-                throw new PDOException("Insert data error => $error"); 
+            // ถ้า student_code นี้ยังไม่มีในฐานข้อมูลให้ทำการ insert
+            if (!in_array($val->student_code, $existingStudents)) {
+                $sqlInsert = "INSERT INTO courses_student (course_id, student_code) VALUES (:course_id, :student_code)";
+                $stmtInsert = $conn->prepare($sqlInsert);
+                $stmtInsert->bindParam(":course_id", $courseId, PDO::PARAM_STR);
+                $stmtInsert->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
+                
+                if(!$stmtInsert->execute()) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Insert data courses_student error => $error");
+                }
             }
-        } 
+        }
+
+        // วนลูปเช็ค student_code ที่อยู่ในฐานข้อมูล แต่ไม่มีใน $student
+        foreach($existingStudents as $existingStudentCode) {
+            if (!in_array($existingStudentCode, $inputStudents)) {
+                $sqlUpdate = "UPDATE courses_student SET is_delete = 'Y' WHERE course_id = :course_id AND student_code = :student_code";
+                $stmtUpdate = $conn->prepare($sqlUpdate);
+                $stmtUpdate->bindParam(":course_id", $courseId, PDO::PARAM_STR);
+                $stmtUpdate->bindParam(":student_code", $existingStudentCode, PDO::PARAM_STR);
+                
+                if(!$stmtUpdate->execute()) {
+                    $error = $conn->errorInfo();
+                    throw new PDOException("Update data error => $error");
+                }
+            }
+        }
         
         $conn->commit();
         http_response_code(200);
         echo json_encode(array("data"=> array("code" => $code)));
     } else  if($_SERVER["REQUEST_METHOD"] == "DELETE"){
-        // $code = $_DELETE["code"];
-        $code = $_GET["code"];
         
-        $sql = "delete from packingset where code = :code";
-        $stmt = $conn->prepare($sql); 
-        if (!$stmt->execute([ 'code' => $code ])){
-            $error = $conn->errorInfo();
-            throw new PDOException("Remove data error => $error");
-        }            
-        
-        $sql = "delete from packingset_detail where packingsetcode = :code";
-        $stmt = $conn->prepare($sql); 
-        if (!$stmt->execute([ 'code' => $code ])){
-            $error = $conn->errorInfo();
-            throw new PDOException("Remove data error => $error");
-        }
-
-        $conn->commit();
-        http_response_code(200);
-        echo json_encode(array("status"=> 1));
     } else  if($_SERVER["REQUEST_METHOD"] == "GET"){
         $code = $_GET["code"]; 
         $sql = "SELECT c.* ";
@@ -219,7 +222,7 @@ try {
 
         $sql = "select s.student_code,CONCAT_WS(' ',s.firstname,s.lastname) as student_name,s.degree,s.school ";
         $sql .= " from courses_student cs left join student s on cs.student_code = s.student_code";        
-        $sql .= " where cs.course_id  = :code";
+        $sql .= " where cs.course_id  = :code and cs.is_delete = 'N'";
         
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute(['code' => $code ])){

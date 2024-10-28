@@ -38,14 +38,6 @@ export const accessColumn = ({handleEdit, handleDelete, handleView, handlePrint}
     width: 120,
     sorter: (a, b) => (a.study_time).localeCompare(b.study_time),
   },
-  {
-    title: "จำนวนรอบเรียน",
-    dataIndex: "number_of_sessions",
-    key: "number_of_sessions", 
-    align: "right",
-    width: 120,
-    sorter: (a, b) => (a.number_of_sessions).localeCompare(b.number_of_sessions),
-  },
   { 
     title: "จำนวนนักเรียน",
     dataIndex: "student_count",

@@ -265,15 +265,15 @@ function CoursesManage() {
       </Col>
       <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
           <Form.Item
-            label="จำนวนรอบเรียน"
-            name="number_of_sessions"
+            label="จำนวนรอบแจ้งเตือบครบกำหนดชำระเงิน"
+            name="number_of_payment"
             rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
             <InputNumber
             min={1}
             max={1000}
             style={{width:'100%', height:40}}  
-            placeholder="กรอกจำนวนรอบเรียน"
+            placeholder="กรอกจำนวนรอบแจ้งเตือบครบกำหนดชำระเงิน"
             className="custom-input-number"
             />
           </Form.Item>

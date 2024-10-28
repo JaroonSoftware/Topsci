@@ -18,14 +18,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         st.nickname,
                         (select max(payment_date) from payments where course_id = c.course_id and student_code = st.student_code) as last_payment_date,
                         c.price,
+                        c.course_id,
                         c.course_name,
-                        c.number_of_sessions,
-                        ss.session_no,
-                        ss.session_date,
+                        att.attendance_no,
+                        att.attendance_date as session_date,
+                        att.attendance_id,
                         att.student_code,
-                        ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) AS attendance_count,
                         CASE 
-                            WHEN ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) = 1 THEN ss.session_date
+                            WHEN att.attendance_no = 1 THEN att.attendance_date
                             ELSE NULL
                         END AS date_sessions
                     FROM 
@@ -71,14 +71,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         st.nickname,
                         (select max(payment_date) from payments where course_id = c.course_id and student_code = st.student_code) as last_payment_date,
                         c.price,
+                        c.course_id,
                         c.course_name,
-                        c.number_of_sessions,
-                        ss.session_no,
-                        ss.session_date,
+                        att.attendance_no,
+                        att.attendance_date as session_date,
+                        att.attendance_id,
                         att.student_code,
-                        ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) AS attendance_count,
                         CASE 
-                            WHEN ROW_NUMBER() OVER (PARTITION BY att.student_code ORDER BY ss.session_date) = 1 THEN ss.session_date
+                            WHEN att.attendance_no = 1 THEN att.attendance_date
                             ELSE NULL
                         END AS date_sessions
                     FROM 
@@ -92,31 +92,18 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                     LEFT JOIN 
                         attendance att ON ss.session_id = att.session_id AND att.student_code = st.student_code
                     WHERE 
-                        att.status = 'Y' and c.course_id = :course and st.student_code = :student_code
+                        att.status = 'Y' and att.student_code = :student_code
                     ORDER BY 
                         c.course_name, ss.session_no, att.student_code";
             $stmt = $conn->prepare($sql);
-            if (!$stmt->execute(['course' => $courses, 'student_code' => $student ])){
+            if (!$stmt->execute(['student_code' => $student ])){
                 $error = $conn->errorInfo(); 
                 http_response_code(404);
                 throw new PDOException("Geting data error => $error");
             }
             $student = $stmt->fetchAll(PDO::FETCH_ASSOC);
-
-            $sql = "SELECT c.* ";
-            $sql .= " FROM `courses` c ";
-            $sql .= " where c.course_id = :code";
-
-            $stmt = $conn->prepare($sql); 
-            if (!$stmt->execute([ 'code' => $courses ])){
-                $error = $conn->errorInfo(); 
-                http_response_code(404);
-                throw new PDOException("Geting data error => $error");
-            }
-            $courses = $stmt->fetch(PDO::FETCH_ASSOC);
-
             http_response_code(200);
-            echo json_encode(array('status' => 1, 'data' => array( "data" => $student, "course" => $courses)));
+            echo json_encode(array('status' => 1, 'data' => array( "data" => $student, "course" => null)));
         }
     } catch (mysqli_sql_exception $e) { 
         http_response_code(400);
