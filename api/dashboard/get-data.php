@@ -24,10 +24,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         att.attendance_date as session_date,
                         att.attendance_id,
                         att.student_code,
-                        CASE 
+                        MAX(CASE 
                             WHEN att.attendance_no = 1 THEN att.attendance_date
-                            ELSE NULL
-                        END AS date_sessions
+                            ELSE NULL 
+                        END) OVER (PARTITION BY st.student_code) AS date_sessions
                     FROM 
                         courses c
                     LEFT JOIN 
@@ -37,11 +37,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                     LEFT JOIN 
                         student st ON cs.student_code = st.student_code
                     LEFT JOIN 
-                        attendance att ON ss.session_id = att.session_id AND att.student_code = st.student_code
+                        attendance att ON ss.session_id = att.session_id AND att.student_code = st.student_code AND att.status = 'Y' 
                     WHERE 
-                        att.status = 'Y' and c.course_id = :course
+                        c.course_id = :course
                     ORDER BY 
-                        c.course_name, ss.session_no, att.student_code";
+                        cs.courses_student_id";
             $stmt = $conn->prepare($sql);
             if (!$stmt->execute(['course' => $courses ])){
                 $error = $conn->errorInfo(); 
@@ -90,9 +90,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                     LEFT JOIN 
                         student st ON cs.student_code = st.student_code
                     LEFT JOIN 
-                        attendance att ON ss.session_id = att.session_id AND att.student_code = st.student_code
+                        attendance att ON ss.session_id = att.session_id AND att.student_code = st.student_code AND att.status = 'Y'
                     WHERE 
-                        att.status = 'Y' and att.student_code = :student_code
+                        cs.student_code = :student_code
                     ORDER BY 
                         c.course_name, ss.session_no, att.student_code";
             $stmt = $conn->prepare($sql);

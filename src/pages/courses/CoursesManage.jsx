@@ -146,15 +146,14 @@ function CoursesManage() {
       .validateFields()
       .then((v) => {
         
-        if (listStudent.length < 1){
-          message.error("กรุณาเพิ่ม รายชื่อนักเรียน");
-          return;
-        }
-        if (listTeacher.length < 1){
-          message.error("กรุณาเพิ่ม รายชื่อครู");
-          return;
-        }
-        debugger
+        // if (listStudent.length < 1){
+        //   message.error("กรุณาเพิ่ม รายชื่อนักเรียน");
+        //   return;
+        // }
+        // if (listTeacher.length < 1){
+        //   message.error("กรุณาเพิ่ม รายชื่อครู");
+        //   return;
+        // }
         if (v.courses_time && v.courses_time.length === 2) {
           const timefrom = v.courses_time[0].format('HH:mm');
           const timeto =v.courses_time[1].format('HH:mm');
@@ -252,7 +251,7 @@ function CoursesManage() {
       <Form.Item
           label="วิชาเรียน"
           name="subject_id"
-          rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+          //rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
         >
           <Select
             size="large"
@@ -267,7 +266,7 @@ function CoursesManage() {
           <Form.Item
             label="จำนวนรอบแจ้งเตือบครบกำหนดชำระเงิน"
             name="number_of_payment"
-            rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+            //rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
             <InputNumber
             min={1}
@@ -282,7 +281,7 @@ function CoursesManage() {
           <Form.Item
             label="ราคาคอร์ส"
             name="price"
-            rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
+            //rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
             <InputNumber
             min={1}
