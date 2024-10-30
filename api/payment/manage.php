@@ -16,6 +16,14 @@ try {
         $_POST = json_decode($rest_json, true); 
         extract($_POST, EXTR_OVERWRITE, "_");
         $payment = (object)$payment; 
+        
+        if (!empty($payment->payment_date)) {
+            $date = new DateTime($payment->payment_date, new DateTimeZone('UTC'));
+            $date->setTimezone(new DateTimeZone('Asia/Bangkok'));
+            $paymentDate = $date->format('Y-m-d H:i:s'); 
+        } else {
+            $paymentDate = null;
+        }
         // insert payment
         $sql = "INSERT INTO `payments`(`course_id`, `student_code`, `payment_date`, `amount_paid`, `payment_method`)  
         values (:course_id,:student_code,:payment_date,:amount_paid,:payment_method)";
@@ -26,7 +34,7 @@ try {
         $stmt->bindParam(":course_id", $payment->course, PDO::PARAM_INT);
         $stmt->bindParam(":student_code", $payment->student_code, PDO::PARAM_INT);
         $stmt->bindParam(":amount_paid", $payment->amount_paid, PDO::PARAM_INT);
-        $stmt->bindParam(":payment_date", $payment_date->format('Y-m-d'), PDO::PARAM_STR);
+        $stmt->bindParam(":payment_date", $paymentDate, PDO::PARAM_STR);
         $stmt->bindParam(":payment_method", $payment->payment_method, PDO::PARAM_STR);
 
         if(!$stmt->execute()) {
@@ -44,7 +52,15 @@ try {
         $_PUT = json_decode($rest_json, true); 
         extract($_PUT, EXTR_OVERWRITE, "_");
         $payment = (object)$payment; 
-        // var_dump($_POST);
+        //var_dump($_PUT);
+        if (!empty($payment_date)) {
+            $date = new DateTime($payment_date, new DateTimeZone('UTC'));
+            $date->setTimezone(new DateTimeZone('Asia/Bangkok'));
+            $paymentDate = $date->format('Y-m-d H:i:s'); 
+        } else {
+            $paymentDate = null;
+        }
+
         $sql = "
         update payments 
         set
@@ -56,12 +72,6 @@ try {
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("Update data error => {$conn->errorInfo()}"); 
         //Update Payment
-            if (!empty($payment_date)) {
-                $paymentDate = (new DateTime($payment_date))->format('Y-m-d');
-            } else {
-                $paymentDate = null; // กรณีที่ไม่มีวันที่
-            }
-            echo $paymentDate;
             $stmt->bindParam(":amount_paid", $amount_paid, PDO::PARAM_INT);
             $stmt->bindParam(":payment_date", $paymentDate, PDO::PARAM_STR);
             $stmt->bindParam(":payment_method", $payment_method, PDO::PARAM_STR);

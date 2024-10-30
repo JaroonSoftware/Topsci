@@ -16,6 +16,14 @@ try {
         $rest_json = file_get_contents("php://input");
         $_POST = json_decode($rest_json, true); 
         extract($_POST, EXTR_OVERWRITE, "_");
+        $courses = (object)$courses;  
+        if (!empty($courses->session_date)) {
+            $date = new DateTime($courses->session_date, new DateTimeZone('UTC'));
+            $date->setTimezone(new DateTimeZone('Asia/Bangkok'));
+            $sessionDate = $date->format('Y-m-d H:i:s'); 
+        } else {
+            $sessionDate = null;
+        }
 
         // insert sessions
         $sql = "INSERT INTO `sessions`(`course_id`, `teacher_id`, `session_no`, `session_date`, `created_by`)  
@@ -23,12 +31,12 @@ try {
 
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("sessions data value prepare error => {$conn->errorInfo()}"); 
-        $courses = (object)$courses;  
+        
         $session_date = new DateTime($courses->session_date);
         $stmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_INT);
         $stmt->bindParam(":teacher_id", $courses->teacher, PDO::PARAM_INT);
         $stmt->bindParam(":session_no", $courses->session_no, PDO::PARAM_STR);
-        $stmt->bindParam(":session_date", $session_date->format('Y-m-d'), PDO::PARAM_STR);
+        $stmt->bindParam(":session_date", $sessionDate, PDO::PARAM_STR);
         $stmt->bindParam(":action_user", $action_user, PDO::PARAM_STR); 
 
         if(!$stmt->execute()) {
@@ -72,7 +80,7 @@ try {
             $stmt->bindParam(":status", ($attendance) , PDO::PARAM_STR);
             $stmt->bindParam(":remarks", ($val->reason) , PDO::PARAM_STR);
             $attendance_no = $val->attendance ? $attendance_no : null;
-            $attendance_date = $val->attendance ? $session_date->format('Y-m-d') : null;
+            $attendance_date = $val->attendance ? $sessionDate : null;
             $stmt->bindParam(":attendance_no", $attendance_no , PDO::PARAM_STR);
             $stmt->bindParam(":attendance_date", $attendance_date , PDO::PARAM_STR);
             
