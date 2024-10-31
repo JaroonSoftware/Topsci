@@ -16,6 +16,13 @@ try {
         $_POST = json_decode($rest_json, true); 
         extract($_POST, EXTR_OVERWRITE, "_");
         $payment = (object)$payment; 
+        if (!empty($payment->payment_date)) {
+            $date = new DateTime($payment->payment_date, new DateTimeZone('UTC'));
+            $date->setTimezone(new DateTimeZone('Asia/Bangkok'));
+            $paymentDate = $date->format('Y-m-d H:i:s'); 
+        } else {
+            $paymentDate = null;
+        }
         // insert payment
         $sql = "INSERT INTO `payments`(`course_id`, `student_code`, `payment_date`, `amount_paid`, `payment_method`)  
         values (:course_id,:student_code,:payment_date,:amount_paid,:payment_method)";
@@ -26,7 +33,7 @@ try {
         $stmt->bindParam(":course_id", $payment->course, PDO::PARAM_INT);
         $stmt->bindParam(":student_code", $payment->student_code, PDO::PARAM_INT);
         $stmt->bindParam(":amount_paid", $payment->amount_paid, PDO::PARAM_INT);
-        $stmt->bindParam(":payment_date", $payment_date->format('Y-m-d'), PDO::PARAM_STR);
+        $stmt->bindParam(":payment_date", $paymentDate, PDO::PARAM_STR);
         $stmt->bindParam(":payment_method", $payment->payment_method, PDO::PARAM_STR);
 
         if(!$stmt->execute()) {

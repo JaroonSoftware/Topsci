@@ -667,6 +667,8 @@ function DashBoard() {
                                             >
                                                 <Select
                                                     showSearch
+                                                    allowClear
+                                                    optionFilterProp="children"
                                                     filterOption={(input, option) =>
                                                         option.label
                                                             .toLowerCase()
@@ -683,6 +685,14 @@ function DashBoard() {
                                         <Col xs={24} sm={8} md={8} lg={8} xl={8}>
                                             <Form.Item label="ชื่อ-นามสกุลนักเรียน" name="student">
                                                 <Select
+                                                    showSearch
+                                                    allowClear
+                                                    optionFilterProp="children"
+                                                    filterOption={(input, option) =>
+                                                        option.label
+                                                            .toLowerCase()
+                                                            .includes(input.toLowerCase())
+                                                    }
                                                     style={{ width: '100%', height: 40 }}
                                                     options={liststudent}
                                                 />
