@@ -24,6 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         att.attendance_date as session_date,
                         att.attendance_id,
                         att.student_code,
+                        att.is_delete,
                         MAX(CASE 
                             WHEN att.attendance_no = 1 THEN att.attendance_date
                             ELSE NULL 

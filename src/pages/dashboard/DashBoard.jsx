@@ -290,6 +290,7 @@ function DashBoard() {
           let result = {};
           if (selectedMenu === 1) {
             result = pivotData(data);
+            console.log(result);
             setListData(result);
             setColumnReport(dynamicColumns); 
           }
@@ -375,7 +376,8 @@ function DashBoard() {
           last_payment_date: item.last_payment_date,
           price: item.price,
           student_code: item.student_code,
-          date_sessions: item.date_sessions
+          date_sessions: item.date_sessions,
+          is_delete: item.is_delete
         };
       }
 
