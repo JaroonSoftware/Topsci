@@ -128,7 +128,7 @@ try {
 
         $sql = "select s.student_code,CONCAT_WS(' ',s.firstname,s.lastname) as student_name,s.degree,s.school ";
         $sql .= " from courses_student cs left join student s on cs.student_code = s.student_code";        
-        $sql .= " where cs.course_id  = :code";
+        $sql .= " where cs.course_id  = :code and cs.is_delete = 'N'";
         
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute(['code' => $code ])){

@@ -266,24 +266,41 @@ function DashBoard() {
         //
         dynamicColumns.push({
           title: "Action",
-          key: "operation", 
+          key: "operation",
           fixed: 'right',
           align: "center",
           width: 120,
           render: (text, record) => {
-              return (
-                <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            // ตรวจสอบสถานะ is_delete
+            const isDeleted = record.is_delete === 'Y';
+            const backgroundColor = isDeleted ? '#ffe6e6' : 'transparent';
+        
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px',
+                  height: '100%',
+                  backgroundColor: backgroundColor,
+                  pointerEvents: isDeleted ? 'none' : 'auto',
+                }}
+              >
+                {!isDeleted && (
                   <Tooltip placement="topLeft" title={'ชำระเงิน'}>
                     <Button
-                        type="primary" ghost
-                        icon={<DollarOutlined  />}
-                        className="checking-button"
-                        onClick={(e) => handleAddPayment(text.student_code,course.course_id)}
-                        size="small"
-                      />
+                      type="primary"
+                      ghost
+                      icon={<DollarOutlined />}
+                      className="checking-button"
+                      onClick={() => handleAddPayment(text.student_code, course.course_id)}
+                      size="small"
+                    />
                   </Tooltip>
-                </span>
-              )
+                )}
+              </div>
+            );
           },
         });
         if(data.length > 0){
@@ -750,9 +767,14 @@ function DashBoard() {
                         columns={columnReport}
                         dataSource={listdata}
                         scroll={{ x: 'max-content' }}
-                        rowClassName={(record) => 
-                          record.is_delete === 'Y' ? 'highlight-row' : ''
+                        rowClassName={(record) =>
+                          record.is_delete === 'Y' ? 'fixed-background-row' : ''
                         }
+                        onRow={(record) => ({
+                          style: record.is_delete === 'Y'
+                            ? { backgroundColor: '#ffe4e4', pointerEvents: 'none' }
+                            : {},
+                        })}
                     />
                 </Col>
             </Row>

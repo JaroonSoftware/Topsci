@@ -24,7 +24,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         att.attendance_date as session_date,
                         att.attendance_id,
                         att.student_code,
-                        MAX(att.is_delete) OVER (PARTITION BY st.student_code) AS is_delete,
+                        MAX(cs.is_delete) OVER (PARTITION BY st.student_code) AS is_delete,
                         MAX(CASE 
                             WHEN att.attendance_no = 1 THEN att.attendance_date
                             ELSE NULL 
