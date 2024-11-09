@@ -152,9 +152,14 @@ try {
         
         // ดึงข้อมูลทั้งหมดมาเก็บไว้ใน array
         $existingStudents = $stmt->fetchAll(PDO::FETCH_COLUMN);
-
+        echo '<pre>';
+            print_r($existingStudents);
+        echo '</pre>';
         // สร้าง array ของ student_code ที่มาจาก input ($student)
         $inputStudents = array_column($student, 'student_code');
+        echo '<pre>';
+            print_r($inputStudents);
+        echo '</pre>';
 
         // วนลูปเพื่อเช็คว่าใน $student มี student_code ที่ยังไม่มีในฐานข้อมูล
         foreach($student as $ind => $val){

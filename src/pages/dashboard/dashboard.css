@@ -1,3 +1,6 @@
+.highlight-row {
+    background-color: rgb(248, 157, 147); /* สีเหลืองอ่อน */
+}
 #dashboard .ant-table-wrapper .ant-table-thead >tr>th, 
 #dashboard .ant-table-wrapper .ant-table-thead >tr>td {
     position: relative;

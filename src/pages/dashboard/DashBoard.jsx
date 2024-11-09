@@ -750,6 +750,9 @@ function DashBoard() {
                         columns={columnReport}
                         dataSource={listdata}
                         scroll={{ x: 'max-content' }}
+                        rowClassName={(record) => 
+                          record.is_delete === 'Y' ? 'highlight-row' : ''
+                        }
                     />
                 </Col>
             </Row>
