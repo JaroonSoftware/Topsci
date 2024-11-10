@@ -91,10 +91,10 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     render: (text, record) => {
       if (record.check_checking === "N") {
         return "0"
-      }else if ((parseFloat(record.price) * parseFloat(record.last_sessions) - parseFloat(record.total_payment)) < 0) {
+      }else if ((parseFloat(record.price)- parseFloat(record.total_payment)) < 0) {
         return "0";
       } else {
-        return (parseFloat(record.price) * parseFloat(record.last_sessions) - parseFloat(record.total_payment));
+        return (parseFloat(record.price) - parseFloat(record.total_payment));
       }
     },
   },
@@ -107,11 +107,11 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     render: (text, record) => {
       if (record.check_checking === "N") {
         return "รอการชำระเงิน"
-      }else if (parseFloat(record.price) * parseFloat(record.last_sessions) === parseFloat(record.total_payment)) {
+      }else if (parseFloat(record.price) === parseFloat(record.total_payment)) {
         return "ชำระเงินครบ";
-      } else if (parseFloat(record.total_payment) < parseFloat(record.price) * parseFloat(record.last_sessions)) {
+      } else if (parseFloat(record.total_payment) < parseFloat(record.price)) {
         return "ค้างชำระเงิน";
-      } else if (parseFloat(record.total_payment) > parseFloat(record.price) * parseFloat(record.last_sessions)) {
+      } else if (parseFloat(record.total_payment) > parseFloat(record.price)) {
         return "ชำระเงินเกิน";
       }
       return null; // หรือสามารถแสดงข้อความอื่น หรือเว้นว่างไว้

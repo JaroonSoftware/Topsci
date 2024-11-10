@@ -111,7 +111,11 @@ try {
                 THEN 'Y'
                 ELSE 'N'
             END AS check_checking,
-            c.price,
+            c.price * (
+                SELECT COALESCE(COUNT(*), 0)
+                FROM attendance a2
+                WHERE a2.course_id = c.course_id AND a2.student_code = cs.student_code
+            ) AS price,
             c.number_of_payment,
             (SELECT COALESCE(max(ss2.session_no), 0) 
                 FROM sessions ss2 
