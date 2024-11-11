@@ -189,7 +189,7 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     },
   }, 
 ];
-export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKey) => [
+export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKey, printBill) => [
     {
       title: "วันที่ชำระเงิน",
       key: "payment_date",
@@ -221,28 +221,42 @@ export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKe
       dataIndex: "operation",
       render: (_, record) => {
         const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <Tooltip placement="topLeft" title={'แก้ไขการชำระเงิน'}>
+        return (
+          <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            {editable ? (
+              <>
+                <Tooltip placement="topLeft" title={"บันทึกแก้ไขการชำระเงิน"}>
+                  <Button onClick={() => save(record.key)} size="small">
+                    Save
+                  </Button>
+                </Tooltip>
+                <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+                  <Button type="link" size="small">
+                    Cancel
+                  </Button>
+                </Popconfirm>
+              </>
+            ) : (
               <Button
-                onClick={(e) => save(record.key)}
+                disabled={editingKey !== ""}
+                size="small"
+                onClick={() => edit(record)}
+              >
+                Edit
+              </Button>
+            )}
+            {/* ปุ่ม Print Receipt */}
+            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
+              <Button
+                type="primary" ghost
+                className="checking-button"
+                icon={<FaPrint />}
+                onClick={() => printBill(record)}
                 size="small"
               >
-                Save
               </Button>
             </Tooltip>
-            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <Button type="link" size="small">Cancel</Button>
-            </Popconfirm>
           </span>
-        ) : (
-          <Button
-            disabled={editingKey !== ""}
-            size="small"
-            onClick={() => edit(record)}
-          >
-            Edit
-          </Button>
         );
       },
     },

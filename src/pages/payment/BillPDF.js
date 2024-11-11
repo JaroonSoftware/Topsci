@@ -185,15 +185,15 @@ const BillPDF = ({ data }) => {
   const repeatSection = (key) => (
     <View key={key}>
       <View style={styles.header}>
-        <Text style={styles.headerText1}>สถานบันกวดวิชา Top Science Tutor</Text>
-        <Text style={styles.headerText2}>เลขที่ 17/242 แขวงแพรกษา เขตสมุทรปราการ, เมืองจ.สมุทรปราการ 20000 โทร: 089-749-2237</Text>
+        <Text style={styles.headerText1}>สถาบันกวดวิชา Top Science Tutor</Text>
+        <Text style={styles.headerText2}>17/242 ซอยนพรัตน์ ตำบลบางปลาสร้อย อำเภอเมืองชลบุรี จังหวัดชลบุรี โทร: 038-287-017</Text>
       </View>
 
       <View style={styles.info}>
         <View style={styles.row}>
           <Text style={styles.text}>ชื่อ-สกุล: {dataCourse.student_name}</Text>
           <Text style={styles.text}>ชื่อเล่น: {dataCourse.nickname}</Text>
-          <Text style={styles.text}>วันที่: {formatDate(currentDate)}</Text>
+          <Text style={styles.text}>วันที่: {formatDate(dataCourse.bill_date)}</Text>
         </View>
         <View style={styles.row}>
           <Text style={styles.text}>วิชา {dataCourse.subject_name} อาจารย์ {dataCourse.teachers}</Text>
@@ -210,7 +210,7 @@ const BillPDF = ({ data }) => {
         </View>
         <View style={styles.tableRow2}>
           <Text style={styles.tableCell12}>ค่าเรียนวิชา {dataCourse.subject_name} กลุ่ม {dataCourse.course_name}</Text>
-          <Text style={styles.tableCell22}>{parseFloat(dataCourse.price).toLocaleString()}</Text>
+          <Text style={styles.tableCell22}>{parseFloat(dataCourse.price_pay).toLocaleString()}</Text>
         </View>
       </View>
 

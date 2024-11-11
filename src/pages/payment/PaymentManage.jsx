@@ -18,6 +18,9 @@ import {
 import dayjs from 'dayjs';
 import { Card, Col, Divider, Flex, Row, Space } from "antd";
 
+import BillPDF from './BillPDF';
+import { pdf } from '@react-pdf/renderer'; // ใช้ pdf() ในการสร้าง Blob จาก PDF
+
 import OptionService from "../../service/Options.service";
 import PaymentService from "../../service/Payment.service";
 import {
@@ -54,10 +57,12 @@ function PaymentManage() {
   const [selectedCouses, setSelectedCouses] = useState(null);
   const [itemsData, setItemsData] = useState([]);
   const [listDataPayment, setListDataPayment] = useState([]);
-
-
   const [dataSourceEditPayment, setDataSourceEditPayment] = useState([]);
   const [editingKey, setEditingKey] = useState("");
+
+  /** Print Bill */
+  const [openModalPrintBill , setOpenModalPrintBill] = useState(false);
+  const [selectedRecordBill, setSelectedRecordBill] = useState(null);
 
   const filterOption = (input, option) =>
     (option?.label ?? "").toLowerCase().includes(input.toLowerCase());
@@ -182,7 +187,6 @@ function PaymentManage() {
     setEditingKey(record.payment_id);
   };
 
-
   const cancel = () => {
     setEditingKey("");
   };
@@ -220,7 +224,96 @@ function PaymentManage() {
     }
   };
 
-  const mergedColumns = listPaymentDetailColumn(isEditing, edit, save, cancel, editingKey).map((col) => {
+  const printBill = (record) => {
+    setSelectedRecordBill(record);
+    setOpenModalPrintBill(true);
+  };
+
+  const handleSaveBill = async (billDate) => {
+    if (selectedRecordBill && billDate !== null) {
+      selectedRecordBill.bill_date = billDate.format("YYYY-MM-DD");
+      await updatePaymentBillDate(selectedRecordBill);
+      await handlePrint(selectedRecordBill);
+      setOpenModalPrintBill(false);
+      setSelectedRecordBill(null);
+    }else{
+      message.error("กรุณากรอกวันที่ออกใบเสร็จ!");
+    }
+  };
+
+  const updatePaymentBillDate = async (record) => {
+    try {
+      await paymentservice.updatePaymentBillDate(record);
+      message.success("อัปเดตข้อมูลสำเร็จ");
+    } catch (error) {
+      message.error("อัปเดตข้อมูลไม่สำเร็จ");
+    }
+  };
+
+  const handlePrint = async (record) => {
+    try {
+      const res = await paymentservice
+        .getDataPrint({ student: record.student_code, couses: record.course_id, payment: record.payment_id })
+        .catch((error) => message.error("get data fail."));
+      
+      const dataPrint = res.data.data;
+      const blob = await pdf(<BillPDF data={dataPrint} />).toBlob();
+
+      if (!blob) {
+        console.error("Blob ไม่ถูกสร้าง");
+        return;
+      }
+
+      const url = URL.createObjectURL(blob);
+      const newWindow = window.open(url);
+      if (newWindow) {
+        newWindow.onload = () => {
+          newWindow.print();
+        };
+      } else {
+        console.error("ไม่สามารถเปิดแท็บใหม่ได้");
+      }
+    } catch (error) {
+      console.error("เกิดข้อผิดพลาด: ", error);
+    }
+  };
+
+  const handleCancelBill = () => {
+    setOpenModalPrintBill(false);
+    setSelectedRecordBill(null);
+  };
+  // Component สำหรับ Modal
+  const PrintBillModal = ({ visible, onSave, onCancel, defaultDate }) => {
+    const [billDate, setBillDate] = useState(
+      defaultDate ? dayjs(defaultDate) : dayjs()
+    );
+
+    const handleSave = () => {
+      onSave(billDate);
+    };
+
+    return (
+      <Modal
+        title="ออกใบเสร็จ"
+        visible={visible}
+        onOk={handleSave}
+        onCancel={onCancel}
+      >
+        <div style={{ marginBottom: 16 }}>
+          <label>วันที่ออกใบเสร็จ:</label>
+          <DatePicker
+            value={billDate ? dayjs(billDate) : null}
+            onChange={(date) => setBillDate(date ? dayjs(date) : null)}
+            format="DD-MM-YYYY"
+            allowClear
+            style={{ width: '100%', height: 40 }}
+          />
+        </div>
+      </Modal>
+    );
+  };
+
+  const mergedColumns = listPaymentDetailColumn(isEditing, edit, save, cancel, editingKey, printBill).map((col) => {
     if (!col.editable) {
       return col;
     }
@@ -294,7 +387,7 @@ function PaymentManage() {
 
 
   const columnstudent = studentColumn( listStudent, handleDetailPayment, handleAddPayment );
-  const columnlistpayment = listPaymentDetailColumn();
+  // const columnlistpayment = listPaymentDetailColumn();
   const SectionCourses = (
     <Row gutter={[8, 8]} className="px-2 sm:px-4 md:px-4 lg:px-4">
       <Col xs={24} sm={24} md={24} lg={12} xl={16} xxl={16}>
@@ -571,6 +664,13 @@ function PaymentManage() {
             </Spin> 
         </Modal>    
       )}
+      {/* Modal Bill */}
+      <PrintBillModal
+        visible={openModalPrintBill}
+        onSave={handleSaveBill}
+        onCancel={handleCancelBill}
+        defaultDate={selectedRecordBill?.bill_date}
+      />
       </div>
     </div>
   );
