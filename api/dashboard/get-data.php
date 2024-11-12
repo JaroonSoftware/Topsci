@@ -17,18 +17,27 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         st.lastname as last_name,
                         st.nickname,
                         (select max(payment_date) from payments where course_id = c.course_id and student_code = st.student_code) as last_payment_date,
-                        c.price,
                         c.course_id,
                         c.course_name,
                         att.attendance_no,
                         att.attendance_date as session_date,
                         att.attendance_id,
-                        att.student_code,
+                        st.student_code,
                         MAX(cs.is_delete) OVER (PARTITION BY st.student_code) AS is_delete,
                         MAX(CASE 
                             WHEN att.attendance_no = 1 THEN att.attendance_date
                             ELSE NULL 
-                        END) OVER (PARTITION BY st.student_code) AS date_sessions
+                        END) OVER (PARTITION BY st.student_code) AS date_sessions,
+                        GREATEST(
+                            (c.price * COUNT(att.attendance_id) OVER (PARTITION BY st.student_code, c.course_id)) 
+                            - (
+                                SELECT COALESCE(SUM(amount_paid), 0) 
+                                FROM payments 
+                                WHERE course_id = c.course_id 
+                                AND student_code = st.student_code
+                            ), 
+                            0
+                        ) AS price
                     FROM 
                         courses c
                     LEFT JOIN 
@@ -71,7 +80,6 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         st.lastname as last_name,
                         st.nickname,
                         (select max(payment_date) from payments where course_id = c.course_id and student_code = st.student_code) as last_payment_date,
-                        c.price,
                         c.course_id,
                         c.course_name,
                         att.attendance_no,
@@ -81,7 +89,17 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
                         CASE 
                             WHEN att.attendance_no = 1 THEN att.attendance_date
                             ELSE NULL
-                        END AS date_sessions
+                        END AS date_sessions,
+                        GREATEST(
+                            (c.price * COUNT(att.attendance_id) OVER (PARTITION BY st.student_code, c.course_id)) 
+                            - (
+                                SELECT COALESCE(SUM(amount_paid), 0) 
+                                FROM payments 
+                                WHERE course_id = c.course_id 
+                                AND student_code = st.student_code
+                            ), 
+                            0
+                        ) AS price
                     FROM 
                         courses c
                     LEFT JOIN 

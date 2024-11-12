@@ -38,7 +38,7 @@ export default function ModalItems({show, close, values, selected}) {
         const newData = {
             ...record
         };
-         console.log(newData);
+         //console.log(newData);
 
         setItemsList([...itemsList, newData]);
     };
@@ -88,7 +88,7 @@ export default function ModalItems({show, close, values, selected}) {
                 const tval = [...itemsRowKeySelect];
                 tval.splice(ind, 1);
                 setItemsRowKeySelect([...tval]);
-                console.log(ind, itemsRowKeySelect);
+                //console.log(ind, itemsRowKeySelect);
             }
         }
     };

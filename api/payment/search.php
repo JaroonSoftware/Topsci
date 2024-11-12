@@ -12,7 +12,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST"){
     extract($_POST, EXTR_OVERWRITE, "_");  
 
     $courses_name = !empty($courses_name) ? " and c.course_name like '%$courses_name%'" : " ";
-    $subject = !empty($subject) ? " and s.subject like '%$subject%'" : "";
+    $subject = !empty($subject) ? " and s.subject_name like '%$subject%'" : "";
     
     try {   
         $sql = " 

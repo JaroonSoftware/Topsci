@@ -61,6 +61,11 @@ try {
 
         foreach( $student as $ind => $val){
             $val = (object)$val;
+            $attendance = $val->attendance ? 'Y' : 'N';
+            // ตรวจสอบเฉพาะนักเรียนที่มี attendance เท่ากับ 'Y'
+            if ($attendance !== 'Y') {
+                continue; // ข้ามถ้า attendance ไม่เท่ากับ 'Y'
+            }
 
             //คิวรี่ count เพื่อหา attendance_no
             $countStmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
@@ -76,7 +81,6 @@ try {
             $stmt->bindParam(":session_id", $sessionId, PDO::PARAM_INT);
             $stmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_INT);
             $stmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
-            $attendance = $val->attendance ? 'Y' : 'N';
             $stmt->bindParam(":status", ($attendance) , PDO::PARAM_STR);
             $stmt->bindParam(":remarks", ($val->reason) , PDO::PARAM_STR);
             $attendance_no = $val->attendance ? $attendance_no : null;

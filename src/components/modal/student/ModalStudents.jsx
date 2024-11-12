@@ -111,7 +111,6 @@ export default function ModalItems({show, close, values, selected}) {
                 if (status === 200) {
                     setItemsData(data.data);
                     setItemsDataWrap(data.data);
-                    console.log(data.data);
                     const keySeleted = selected.map( m => m.student_code );
 
                     setItemsRowKeySelect([...keySeleted]);

@@ -93,7 +93,6 @@ const CheckingAccess = () => {
                 const time_to = data.courses_time[1].format('HH:mm');
                 Object.assign(data, {time_from, time_to});
             }
-            console.log(data);
             setTimeout( () => getData(data), 80);
         }).catch( err => {
             console.warn(err);
@@ -107,7 +106,6 @@ const CheckingAccess = () => {
     }
 
     const handleCheck = (data) => {
-        debugger
          navigate("manage/check", { state: { config: {...mngConfig, title:"เช็คชื่อการเข้าเรียน", action:"check", code:data?.course_id} }, replace:true } );
     }; 
 

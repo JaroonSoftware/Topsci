@@ -94,7 +94,6 @@ const CoursesAccess = () => {
                 const time_to = data.courses_time[1].format('HH:mm');
                 Object.assign(data, {time_from, time_to});
             }
-            console.log(data);
             setTimeout( () => getData(data), 80);
         }).catch( err => {
             console.warn(err);
@@ -112,7 +111,6 @@ const CoursesAccess = () => {
     }
 
     const handleEdit = (data) => {
-        debugger
          navigate("manage/edit", { state: { config: {...mngConfig, title:"แก้ไขคอร์สเรียน", action:"edit", code:data?.course_id} }, replace:true } );
     }; 
 

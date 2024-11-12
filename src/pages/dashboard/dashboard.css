@@ -12,6 +12,27 @@
 .ant-table-row:hover {
   background-color: #f5f5f5 !important;
 }
+.deleted-row {
+  background-color: #ffe6e6 !important;
+}
+
+.ant-table-fixed .deleted-row {
+  background-color: #ffe6e6 !important;
+}
+
+.row-deleted td {
+  background-color: #ffe6e6 !important; /* เปลี่ยนสีพื้นหลังของทั้งแถว */
+}
+
+/* สำหรับคอลัมน์ที่ fixed */
+.ant-table-fixed .row-deleted {
+  background-color: #ffe6e6 !important;
+}
+
+.ant-table-fixed-right .row-deleted td {
+  background-color: #ffe6e6 !important;
+}
+
 #dashboard .ant-table-wrapper .ant-table-thead >tr>th, 
 #dashboard .ant-table-wrapper .ant-table-thead >tr>td {
     position: relative;

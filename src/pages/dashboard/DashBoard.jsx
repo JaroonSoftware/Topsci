@@ -270,10 +270,10 @@ function DashBoard() {
           fixed: 'right',
           align: "center",
           width: 120,
+          className: (record) => (record.is_delete === 'Y' ? 'deleted-row' : ''),
           render: (text, record) => {
             // ตรวจสอบสถานะ is_delete
             const isDeleted = record.is_delete === 'Y';
-            const backgroundColor = isDeleted ? '#ffe6e6' : 'transparent';
         
             return (
               <div
@@ -283,7 +283,6 @@ function DashBoard() {
                   alignItems: 'center',
                   gap: '8px',
                   height: '100%',
-                  backgroundColor: backgroundColor,
                   pointerEvents: isDeleted ? 'none' : 'auto',
                 }}
               >
@@ -307,7 +306,6 @@ function DashBoard() {
           let result = {};
           if (selectedMenu === 1) {
             result = pivotData(data);
-            console.log(result);
             setListData(result);
             setColumnReport(dynamicColumns); 
           }
@@ -461,6 +459,7 @@ function DashBoard() {
           .then((r) => {
             handleCloseModalAddPayment();
             message.success("บันทึกข้อมูลสำเร็จ.");
+            handleSearch();
           })
           .catch((err) => {
             message.error("บันทึกข้อมูลไม่สำเร็จ.");
@@ -514,7 +513,7 @@ function DashBoard() {
         bordered
         dataSource={dataMenuDashBoard}
         renderItem={(item, index) =>
-          <List.Item key={index}>
+          <List.Item key={item.value}>
             <List.Item.Meta
               title={<a onClick={() => hendelOpenMenu(item.value)}>{item.title}</a>}
             />
@@ -536,7 +535,7 @@ function DashBoard() {
       {/* Modal สำหรับแก้ไขข้อมูลเวลาเรียน */}
         <Modal
           title="แก้ไขข้อมูลเวลาเรียน"
-          visible={isModalEditDateVisible}
+          open={isModalEditDateVisible}
           onOk={handleSaveDate}
           onCancel={() => setIsModalEditDateVisible(false)}
           okText="บันทึก"
@@ -565,7 +564,7 @@ function DashBoard() {
         </Modal>
       {/* Modal Add Payment*/}
         <Modal
-              visible={openModalAddPayment}
+              open={openModalAddPayment}
               title="เพิ่มการชำระเงิน"
               onCancel={() => handleCloseModalAddPayment() } 
               footer={ButtonModalAddPayment}
@@ -763,13 +762,11 @@ function DashBoard() {
                     <Table
                         title={() => TitleTableGroup}
                         size='small'
-                        rowKey="student_code"
+                        rowKey={(record) => record.student_code || Math.random()}
                         columns={columnReport}
                         dataSource={listdata}
                         scroll={{ x: 'max-content' }}
-                        rowClassName={(record) =>
-                          record.is_delete === 'Y' ? 'fixed-background-row' : ''
-                        }
+                        rowClassName={(record) => (record.is_delete === 'Y' ? 'row-deleted' : '')}
                         onRow={(record) => ({
                           style: record.is_delete === 'Y'
                             ? { backgroundColor: '#ffe4e4', pointerEvents: 'none' }
@@ -808,7 +805,7 @@ function DashBoard() {
                                 size="small"
                                 columns={dynamicReportColumnsByStudent[courseId]}
                                 dataSource={dataByStudent}
-                                rowKey={(index) => index}
+                                rowKey={(record) => record.student_code || record.id || Math.random()}
                                 pagination={false}
                                 scroll={{ x: 'max-content' }}
                             />

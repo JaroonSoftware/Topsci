@@ -225,6 +225,7 @@ function PaymentManage() {
   };
 
   const printBill = (record) => {
+    console.log(record);
     setSelectedRecordBill(record);
     setOpenModalPrintBill(true);
   };
@@ -295,7 +296,7 @@ function PaymentManage() {
     return (
       <Modal
         title="ออกใบเสร็จ"
-        visible={visible}
+        open={visible}
         onOk={handleSave}
         onCancel={onCancel}
       >

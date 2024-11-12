@@ -58,10 +58,7 @@ let _nav = [
     icon: <FaUserCircle className="nav-ico" />,
     to: "/users",
   },
-  {
-    title: "กำลังปรับปรุง",
-    type: "group",
-  },
+
 ];
 
 export default _nav;

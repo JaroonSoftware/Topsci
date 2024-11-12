@@ -124,36 +124,36 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     align: "center",
     width: 120,
     render: (text, record) => {
-      const handlePrint = async () => {
-        try {
-          const res = await paymentservice
-          .getDataPrint({ student: record.student_code, couses: record.course_id })
-          .catch((error) => message.error("get data fail."));
-          //console.log(res.data.data);
-          const dataPrint = res.data.data;
-          const blob = await pdf(<BillPDF data={dataPrint}  />).toBlob(); 
+      // const handlePrint = async () => {
+      //   try {
+      //     const res = await paymentservice
+      //     .getDataPrint({ student: record.student_code, couses: record.course_id })
+      //     .catch((error) => message.error("get data fail."));
+      //     //console.log(res.data.data);
+      //     const dataPrint = res.data.data;
+      //     const blob = await pdf(<BillPDF data={dataPrint}  />).toBlob(); 
           
-          // ตรวจสอบ Blob ที่ถูกสร้าง
-          if (!blob) {
-            console.error("Blob ไม่ถูกสร้าง");
-            return;
-          }
+      //     // ตรวจสอบ Blob ที่ถูกสร้าง
+      //     if (!blob) {
+      //       console.error("Blob ไม่ถูกสร้าง");
+      //       return;
+      //     }
       
-          const url = URL.createObjectURL(blob);
+      //     const url = URL.createObjectURL(blob);
       
-          // เปิดแท็บใหม่และสั่งพิมพ์จากแท็บใหม่แทนการใช้ iframe
-          const newWindow = window.open(url);
-          if (newWindow) {
-            newWindow.onload = () => {
-              newWindow.print();
-            };
-          } else {
-            console.error("ไม่สามารถเปิดแท็บใหม่ได้");
-          }
-        } catch (error) {
-          console.error("เกิดข้อผิดพลาด: ", error);
-        }
-      };
+      //     // เปิดแท็บใหม่และสั่งพิมพ์จากแท็บใหม่แทนการใช้ iframe
+      //     const newWindow = window.open(url);
+      //     if (newWindow) {
+      //       newWindow.onload = () => {
+      //         newWindow.print();
+      //       };
+      //     } else {
+      //       console.error("ไม่สามารถเปิดแท็บใหม่ได้");
+      //     }
+      //   } catch (error) {
+      //     console.error("เกิดข้อผิดพลาด: ", error);
+      //   }
+      // };
         return (
           <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
@@ -173,16 +173,6 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                   onClick={(e) => handleAddPayment(record.student_code)}
                   size="small"
                 />
-            </Tooltip>
-            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
-              <Button
-                type="primary" ghost
-                className="checking-button"
-                icon={<FaPrint />}
-                onClick={handlePrint} // เรียกฟังก์ชันเพื่อพิมพ์
-                size="small"
-              >
-              </Button>
             </Tooltip>
           </span>
         )

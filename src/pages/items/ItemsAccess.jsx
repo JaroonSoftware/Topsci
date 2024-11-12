@@ -32,7 +32,6 @@ const ItemsAccess = () => {
         .getAllitem(data)
         .then((res) => {
           const { data } = res.data;
-          console.log(data);
           setAccessData(data);
         })
         .catch((err) => {

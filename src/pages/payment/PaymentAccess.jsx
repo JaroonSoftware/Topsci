@@ -88,7 +88,6 @@ const PaymentAccess = () => {
     }
 
     const handleListPayment = (data) => {
-        debugger
          navigate("manage/listpayment", { state: { config: {...mngConfig, title:"ชำระเงิน", action:"detail", code:data?.course_id} }, replace:true } );
     }; 
     

@@ -279,7 +279,7 @@ function CoursesManage() {
       </Col>
       <Col xs={24} sm={24} md={24} lg={12} xl={6} xxl={6}>
           <Form.Item
-            label="ราคาคอร์ส"
+            label="ราคาคอร์สต่อครั้งเรียน"
             name="price"
             //rules={[{ required: true, message: "กรุณากรอกข้อมูล!" }]}
           >
