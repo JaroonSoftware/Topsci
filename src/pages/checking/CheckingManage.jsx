@@ -99,7 +99,6 @@ function CheckingManage() {
         const student = {...listStudent};
 
         const parm = { courses, student  };
-        console.log(parm);
         const actions = checkingservice.checking;
         actions(parm)
           .then((r) => {

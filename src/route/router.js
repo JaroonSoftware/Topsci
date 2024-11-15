@@ -10,7 +10,6 @@ import { ROLES } from "../constant/constant";
 
 import { WarehouseRouter } from "./warehouse.router";
 import { DataRouter } from "./data.router";
-import { PrintRouter } from "./print.route";
 const Router = () => {
   return (
     <BrowserRouter>
@@ -28,7 +27,6 @@ const Router = () => {
         <Route element={<PrivateRoute allowdRole={[ROLES.ADMIN]} />}>
           {DataRouter}
           {WarehouseRouter}
-          {PrintRouter}
         </Route>
 
         <Route path="/*" element={<PageNotFound />} />

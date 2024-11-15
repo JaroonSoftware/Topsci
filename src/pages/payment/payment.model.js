@@ -91,10 +91,10 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     render: (text, record) => {
       if (record.check_checking === "N") {
         return "0"
-      }else if ((parseFloat(record.price) * parseFloat(record.last_sessions) - parseFloat(record.total_payment)) < 0) {
+      }else if ((parseFloat(record.price)- parseFloat(record.total_payment)) < 0) {
         return "0";
       } else {
-        return (parseFloat(record.price) * parseFloat(record.last_sessions) - parseFloat(record.total_payment));
+        return (parseFloat(record.price) - parseFloat(record.total_payment));
       }
     },
   },
@@ -107,11 +107,11 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     render: (text, record) => {
       if (record.check_checking === "N") {
         return "รอการชำระเงิน"
-      }else if (parseFloat(record.price) * parseFloat(record.last_sessions) === parseFloat(record.total_payment)) {
+      }else if (parseFloat(record.price) === parseFloat(record.total_payment)) {
         return "ชำระเงินครบ";
-      } else if (parseFloat(record.total_payment) < parseFloat(record.price) * parseFloat(record.last_sessions)) {
+      } else if (parseFloat(record.total_payment) < parseFloat(record.price)) {
         return "ค้างชำระเงิน";
-      } else if (parseFloat(record.total_payment) > parseFloat(record.price) * parseFloat(record.last_sessions)) {
+      } else if (parseFloat(record.total_payment) > parseFloat(record.price)) {
         return "ชำระเงินเกิน";
       }
       return null; // หรือสามารถแสดงข้อความอื่น หรือเว้นว่างไว้
@@ -124,36 +124,36 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
     align: "center",
     width: 120,
     render: (text, record) => {
-      const handlePrint = async () => {
-        try {
-          const res = await paymentservice
-          .getDataPrint({ student: record.student_code, couses: record.course_id })
-          .catch((error) => message.error("get data fail."));
-          //console.log(res.data.data);
-          const dataPrint = res.data.data;
-          const blob = await pdf(<BillPDF data={dataPrint}  />).toBlob(); 
+      // const handlePrint = async () => {
+      //   try {
+      //     const res = await paymentservice
+      //     .getDataPrint({ student: record.student_code, couses: record.course_id })
+      //     .catch((error) => message.error("get data fail."));
+      //     //console.log(res.data.data);
+      //     const dataPrint = res.data.data;
+      //     const blob = await pdf(<BillPDF data={dataPrint}  />).toBlob(); 
           
-          // ตรวจสอบ Blob ที่ถูกสร้าง
-          if (!blob) {
-            console.error("Blob ไม่ถูกสร้าง");
-            return;
-          }
+      //     // ตรวจสอบ Blob ที่ถูกสร้าง
+      //     if (!blob) {
+      //       console.error("Blob ไม่ถูกสร้าง");
+      //       return;
+      //     }
       
-          const url = URL.createObjectURL(blob);
+      //     const url = URL.createObjectURL(blob);
       
-          // เปิดแท็บใหม่และสั่งพิมพ์จากแท็บใหม่แทนการใช้ iframe
-          const newWindow = window.open(url);
-          if (newWindow) {
-            newWindow.onload = () => {
-              newWindow.print();
-            };
-          } else {
-            console.error("ไม่สามารถเปิดแท็บใหม่ได้");
-          }
-        } catch (error) {
-          console.error("เกิดข้อผิดพลาด: ", error);
-        }
-      };
+      //     // เปิดแท็บใหม่และสั่งพิมพ์จากแท็บใหม่แทนการใช้ iframe
+      //     const newWindow = window.open(url);
+      //     if (newWindow) {
+      //       newWindow.onload = () => {
+      //         newWindow.print();
+      //       };
+      //     } else {
+      //       console.error("ไม่สามารถเปิดแท็บใหม่ได้");
+      //     }
+      //   } catch (error) {
+      //     console.error("เกิดข้อผิดพลาด: ", error);
+      //   }
+      // };
         return (
           <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
             <Tooltip placement="topLeft" title={'ดูประวัตการชำระเงิน'}>
@@ -174,22 +174,12 @@ export const studentColumn = (listStudent, handleDetailPayment,handleAddPayment 
                   size="small"
                 />
             </Tooltip>
-            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
-              <Button
-                type="primary" ghost
-                className="checking-button"
-                icon={<FaPrint />}
-                onClick={handlePrint} // เรียกฟังก์ชันเพื่อพิมพ์
-                size="small"
-              >
-              </Button>
-            </Tooltip>
           </span>
         )
     },
   }, 
 ];
-export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKey) => [
+export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKey, printBill) => [
     {
       title: "วันที่ชำระเงิน",
       key: "payment_date",
@@ -221,28 +211,42 @@ export const listPaymentDetailColumn = (isEditing, edit, save, cancel, editingKe
       dataIndex: "operation",
       render: (_, record) => {
         const editable = isEditing(record);
-        return editable ? (
-          <span>
-            <Tooltip placement="topLeft" title={'แก้ไขการชำระเงิน'}>
+        return (
+          <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            {editable ? (
+              <>
+                <Tooltip placement="topLeft" title={"บันทึกแก้ไขการชำระเงิน"}>
+                  <Button onClick={() => save(record.key)} size="small">
+                    Save
+                  </Button>
+                </Tooltip>
+                <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
+                  <Button type="link" size="small">
+                    Cancel
+                  </Button>
+                </Popconfirm>
+              </>
+            ) : (
               <Button
-                onClick={(e) => save(record.key)}
+                disabled={editingKey !== ""}
+                size="small"
+                onClick={() => edit(record)}
+              >
+                Edit
+              </Button>
+            )}
+            {/* ปุ่ม Print Receipt */}
+            <Tooltip placement="topLeft" title={'ปริ้นใบเสร็จ'}>
+              <Button
+                type="primary" ghost
+                className="checking-button"
+                icon={<FaPrint />}
+                onClick={() => printBill(record)}
                 size="small"
               >
-                Save
               </Button>
             </Tooltip>
-            <Popconfirm title="Sure to cancel?" onConfirm={cancel}>
-              <Button type="link" size="small">Cancel</Button>
-            </Popconfirm>
           </span>
-        ) : (
-          <Button
-            disabled={editingKey !== ""}
-            size="small"
-            onClick={() => edit(record)}
-          >
-            Edit
-          </Button>
         );
       },
     },

@@ -266,24 +266,40 @@ function DashBoard() {
         //
         dynamicColumns.push({
           title: "Action",
-          key: "operation", 
+          key: "operation",
           fixed: 'right',
           align: "center",
           width: 120,
+          className: (record) => (record.is_delete === 'Y' ? 'deleted-row' : ''),
           render: (text, record) => {
-              return (
-                <span style={{ display: 'flex', gap: '8px', justifyContent: 'center' }}>
+            // ตรวจสอบสถานะ is_delete
+            const isDeleted = record.is_delete === 'Y';
+        
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  gap: '8px',
+                  height: '100%',
+                  pointerEvents: isDeleted ? 'none' : 'auto',
+                }}
+              >
+                {!isDeleted && (
                   <Tooltip placement="topLeft" title={'ชำระเงิน'}>
                     <Button
-                        type="primary" ghost
-                        icon={<DollarOutlined  />}
-                        className="checking-button"
-                        onClick={(e) => handleAddPayment(text.student_code,course.course_id)}
-                        size="small"
-                      />
+                      type="primary"
+                      ghost
+                      icon={<DollarOutlined />}
+                      className="checking-button"
+                      onClick={() => handleAddPayment(text.student_code, course.course_id)}
+                      size="small"
+                    />
                   </Tooltip>
-                </span>
-              )
+                )}
+              </div>
+            );
           },
         });
         if(data.length > 0){
@@ -375,7 +391,8 @@ function DashBoard() {
           last_payment_date: item.last_payment_date,
           price: item.price,
           student_code: item.student_code,
-          date_sessions: item.date_sessions
+          date_sessions: item.date_sessions,
+          is_delete: item.is_delete
         };
       }
 
@@ -442,6 +459,7 @@ function DashBoard() {
           .then((r) => {
             handleCloseModalAddPayment();
             message.success("บันทึกข้อมูลสำเร็จ.");
+            handleSearch();
           })
           .catch((err) => {
             message.error("บันทึกข้อมูลไม่สำเร็จ.");
@@ -495,7 +513,7 @@ function DashBoard() {
         bordered
         dataSource={dataMenuDashBoard}
         renderItem={(item, index) =>
-          <List.Item key={index}>
+          <List.Item key={item.value}>
             <List.Item.Meta
               title={<a onClick={() => hendelOpenMenu(item.value)}>{item.title}</a>}
             />
@@ -517,7 +535,7 @@ function DashBoard() {
       {/* Modal สำหรับแก้ไขข้อมูลเวลาเรียน */}
         <Modal
           title="แก้ไขข้อมูลเวลาเรียน"
-          visible={isModalEditDateVisible}
+          open={isModalEditDateVisible}
           onOk={handleSaveDate}
           onCancel={() => setIsModalEditDateVisible(false)}
           okText="บันทึก"
@@ -546,7 +564,7 @@ function DashBoard() {
         </Modal>
       {/* Modal Add Payment*/}
         <Modal
-              visible={openModalAddPayment}
+              open={openModalAddPayment}
               title="เพิ่มการชำระเงิน"
               onCancel={() => handleCloseModalAddPayment() } 
               footer={ButtonModalAddPayment}
@@ -744,10 +762,16 @@ function DashBoard() {
                     <Table
                         title={() => TitleTableGroup}
                         size='small'
-                        rowKey="student_code"
+                        rowKey={(record) => record.student_code || Math.random()}
                         columns={columnReport}
                         dataSource={listdata}
                         scroll={{ x: 'max-content' }}
+                        rowClassName={(record) => (record.is_delete === 'Y' ? 'row-deleted' : '')}
+                        onRow={(record) => ({
+                          style: record.is_delete === 'Y'
+                            ? { backgroundColor: '#ffe4e4', pointerEvents: 'none' }
+                            : {},
+                        })}
                     />
                 </Col>
             </Row>
@@ -781,7 +805,7 @@ function DashBoard() {
                                 size="small"
                                 columns={dynamicReportColumnsByStudent[courseId]}
                                 dataSource={dataByStudent}
-                                rowKey={(index) => index}
+                                rowKey={(record) => record.student_code || record.id || Math.random()}
                                 pagination={false}
                                 scroll={{ x: 'max-content' }}
                             />

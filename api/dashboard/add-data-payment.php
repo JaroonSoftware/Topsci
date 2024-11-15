@@ -24,8 +24,8 @@ try {
             $paymentDate = null;
         }
         // insert payment
-        $sql = "INSERT INTO `payments`(`course_id`, `student_code`, `payment_date`, `amount_paid`, `payment_method`)  
-        values (:course_id,:student_code,:payment_date,:amount_paid,:payment_method)";
+        $sql = "INSERT INTO `payments`(`course_id`, `student_code`, `payment_date`, `amount_paid`, `payment_method`, `created_by`)  
+        values (:course_id,:student_code,:payment_date,:amount_paid,:payment_method,:created_by)";
         echo $sql;
         $stmt = $conn->prepare($sql);
         if(!$stmt) throw new PDOException("payment data value prepare error => {$conn->errorInfo()}");   
@@ -35,6 +35,7 @@ try {
         $stmt->bindParam(":amount_paid", $payment->amount_paid, PDO::PARAM_INT);
         $stmt->bindParam(":payment_date", $paymentDate, PDO::PARAM_STR);
         $stmt->bindParam(":payment_method", $payment->payment_method, PDO::PARAM_STR);
+        $stmt->bindParam(":created_by", $action_user, PDO::PARAM_STR);
 
         if(!$stmt->execute()) {
             $error = $conn->errorInfo();

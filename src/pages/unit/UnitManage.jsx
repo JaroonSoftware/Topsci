@@ -28,7 +28,6 @@ const UnitManage = () => {
     if (config?.action !== "create") {
       getsupData(config.code);
     }
-    console.log(config);
 
     return () => {
       form.resetFields();

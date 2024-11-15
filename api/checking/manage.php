@@ -61,6 +61,11 @@ try {
 
         foreach( $student as $ind => $val){
             $val = (object)$val;
+            $attendance = $val->attendance ? 'Y' : 'N';
+            // ตรวจสอบเฉพาะนักเรียนที่มี attendance เท่ากับ 'Y'
+            if ($attendance !== 'Y') {
+                continue; // ข้ามถ้า attendance ไม่เท่ากับ 'Y'
+            }
 
             //คิวรี่ count เพื่อหา attendance_no
             $countStmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
@@ -76,7 +81,6 @@ try {
             $stmt->bindParam(":session_id", $sessionId, PDO::PARAM_INT);
             $stmt->bindParam(":course_id", $courses->course_id, PDO::PARAM_INT);
             $stmt->bindParam(":student_code", $val->student_code, PDO::PARAM_STR);
-            $attendance = $val->attendance ? 'Y' : 'N';
             $stmt->bindParam(":status", ($attendance) , PDO::PARAM_STR);
             $stmt->bindParam(":remarks", ($val->reason) , PDO::PARAM_STR);
             $attendance_no = $val->attendance ? $attendance_no : null;
@@ -128,7 +132,7 @@ try {
 
         $sql = "select s.student_code,CONCAT_WS(' ',s.firstname,s.lastname) as student_name,s.degree,s.school ";
         $sql .= " from courses_student cs left join student s on cs.student_code = s.student_code";        
-        $sql .= " where cs.course_id  = :code";
+        $sql .= " where cs.course_id  = :code and cs.is_delete = 'N'";
         
         $stmt = $conn->prepare($sql); 
         if (!$stmt->execute(['code' => $code ])){

@@ -14,7 +14,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     // SQL statement
     $sql = "SELECT CONCAT(IFNULL(st.firstname, ''), ' ', IFNULL(st.lastname, '')) AS student_name,
                    st.nickname,
-                   c.price,
+             --    c.price,
+                   p.amount_paid as price_pay,
+                   p.bill_date,
                    c.course_id,
                    c.course_name,
                    CONCAT(IFNULL(DATE_FORMAT(c.time_from, '%H:%i'), ''), '-', IFNULL(DATE_FORMAT(c.time_to, '%H:%i'), '')) AS course_time,
@@ -34,13 +36,14 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             LEFT JOIN student st ON cs.student_code = st.student_code
             LEFT JOIN attendance att ON ss.session_id = att.session_id AND att.student_code = st.student_code
             LEFT JOIN subjects sj ON c.subject_id = sj.subject_id
-            WHERE att.status = 'Y' AND att.student_code = :student AND c.course_id = :course
+            LEFT JOIN payments p ON p.course_id = c.course_id AND p.student_code = cs.student_code
+            WHERE att.status = 'Y' AND att.student_code = :student AND c.course_id = :course AND p.payment_id = :payment
             ORDER BY c.course_name, ss.session_no, att.student_code";
 
     // Prepared statement
     try {
         $stmt = $conn->prepare($sql);
-        if (!$stmt->execute(['student' => $student, 'course' => $couses])) {
+        if (!$stmt->execute(['student' => $student, 'course' => $couses, 'payment' => $payment])) {
             $error = $conn->errorInfo();
             http_response_code(404);
             throw new PDOException("Getting data error => " . $error[2]);
